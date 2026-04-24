@@ -1,0 +1,97 @@
+﻿@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#1a1a2e,#e94560);
+        display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-shield-check" style="font-size:1.6rem;color:white;"></i>
+    </div>
+    <div>
+        <h2 class="mb-0" style="font-family:'Playfair Display',serif;">Admin Panel</h2>
+        <small class="text-muted">Manage books and users</small>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Books Card -->
+    <div class="col-md-6">
+        <div class="card h-100" style="border-left: 5px solid #e94560;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span style="font-size:2.5rem;">📚</span>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Book Management</h4>
+                        <small class="text-muted">Add, edit, or remove books</small>
+                    </div>
+                </div>
+                <p class="text-muted mb-4">
+                    Control the entire book catalogue — update prices, stock levels, authors, and titles.
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="/Admin/Books" class="btn btn-accent px-4">
+                        <i class="bi bi-book me-2"></i>Manage Books
+                    </a>
+                    <a href="/Admin/CreateBook" class="btn btn-outline-danger px-4">
+                        <i class="bi bi-plus-lg me-1"></i>Add Book
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Card -->
+    <div class="col-md-6">
+        <div class="card h-100" style="border-left: 5px solid #1a1a2e;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span style="font-size:2.5rem;">👥</span>
+                    <div>
+                        <h4 class="mb-0 fw-bold">User Management</h4>
+                        <small class="text-muted">View all registered users</small>
+                    </div>
+                </div>
+                <p class="text-muted mb-4">
+                    Browse all registered accounts, see their roles, emails, and profile information.
+                </p>
+                <a href="/Admin/Users" class="btn btn-dark px-4">
+                    <i class="bi bi-people me-2"></i>View Users
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Quick stats row -->
+<div class="row g-3 mt-2">
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div style="font-size:2rem;">📖</div>
+            <div class="fw-bold fs-4 mt-1">@ViewBag.TotalBooks</div>
+            <small class="text-muted">Total Books</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div style="font-size:2rem;">👤</div>
+            <div class="fw-bold fs-4 mt-1">@ViewBag.TotalUsers</div>
+            <small class="text-muted">Registered Users</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div style="font-size:2rem;">🛒</div>
+            <div class="fw-bold fs-4 mt-1">@ViewBag.TotalOrders</div>
+            <small class="text-muted">Total Orders</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div style="font-size:2rem;">⚠️</div>
+            <div class="fw-bold fs-4 mt-1 text-warning">@ViewBag.LowStock</div>
+            <small class="text-muted">Low Stock Books</small>
+        </div>
+    </div>
+</div>

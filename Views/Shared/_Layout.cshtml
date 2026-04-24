@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --brand: #1a1a2e;
+            --accent: #e94560;
+            --gold: #f5a623;
+            --light-bg: #f8f7f4;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--light-bg); }
+        h1, h2, h3, .brand-font { font-family: 'Playfair Display', serif; }
+        .navbar {
+            background: var(--brand) !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: white !important;
+            letter-spacing: 1px;
+        }
+        .navbar-brand span { color: var(--accent); }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; }
+        .nav-link:hover { color: var(--accent) !important; }
+        .nav-link.active { color: var(--gold) !important; }
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-accent:hover { background: #c73652; color: white; }
+        /* Admin badge pill in navbar */
+        .nav-admin-link {
+            background: rgba(233,69,96,0.18);
+            border: 1px solid rgba(233,69,96,0.45);
+            border-radius: 20px;
+            padding: 0.3rem 0.85rem !important;
+            color: #f5a623 !important;
+            font-weight: 700 !important;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+        }
+        .nav-admin-link:hover { background: rgba(233,69,96,0.35) !important; color: white !important; }
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+        .alert { border-radius: 12px; }
+        footer { background: var(--brand); color: rgba(255,255,255,0.6); padding: 1.5rem 0; margin-top: 4rem; }
+        .avatar-sm {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+        }
+        .avatar-placeholder {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    @{
+        var userName  = Context.Session.GetString("UserName");
+        var userId    = Context.Session.GetInt32("UserId");
+        var userRole  = Context.Session.GetString("UserRole");   // "Admin" or "User"
+    }
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/Books/Index">📚 Book<span>Store</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                @if (userId != null)
+                {
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Books/Index"><i class="bi bi-book me-1"></i>Books</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Transaction/History"><i class="bi bi-clock-history me-1"></i>My Orders</a>
+                        </li>
+                        @if (userRole == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-admin-link" href="/Admin/Index">
+                                    <i class="bi bi-shield-check me-1"></i>Admin Panel
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav ms-auto align-items-center gap-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Profile">
+                                <i class="bi bi-person-circle me-1"></i>@userName
+                                @if (userRole == "Admin")
+                                {
+                                    <span class="badge ms-1" style="background:#e94560;font-size:0.65rem;vertical-align:middle;">ADMIN</span>
+                                }
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-sm btn-accent" href="/Account/Logout">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                }
+                else
+                {
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="/Account/Login">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/Account/Register">Register</a></li>
+                    </ul>
+                }
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @RenderBody()
+    </div>
+
+    <footer class="text-center">
+        <small>&copy; @DateTime.Now.Year BookStore — Built with ASP.NET MVC</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

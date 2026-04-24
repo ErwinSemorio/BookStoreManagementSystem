@@ -1,0 +1,119 @@
+﻿@model IEnumerable<BookStoreApp.Models.Transaction>
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 style="font-family:'Playfair Display',serif; font-weight:700; margin:0;">
+            🧾 My Orders
+        </h2>
+        <p class="text-muted mb-0">Your purchase history</p>
+    </div>
+    <a href="/Books/Index" class="btn btn-accent">
+        <i class="bi bi-book me-2"></i>Browse Books
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card text-center py-5">
+        <div style="font-size:4rem;">🛒</div>
+        <h4 class="text-muted mt-3">No purchases yet</h4>
+        <p class="text-muted">Start browsing and buy your first book!</p>
+        <div>
+            <a href="/Books/Index" class="btn btn-accent px-4">Browse Books</a>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Summary Card -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card p-3 text-center">
+                <div style="font-size:2rem;">📦</div>
+                <div class="fw-bold fs-4">@Model.Count()</div>
+                <div class="text-muted small">Total Orders</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card p-3 text-center">
+                <div style="font-size:2rem;">📚</div>
+                <div class="fw-bold fs-4">@Model.Sum(t => t.Quantity)</div>
+                <div class="text-muted small">Books Purchased</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card p-3 text-center">
+                <div style="font-size:2rem;">💰</div>
+                <div class="fw-bold fs-4" style="color:#e94560;">
+                    ₱@Model.Sum(t => t.Quantity * (t.Book?.Price ?? 0)).ToString("N2")
+                </div>
+                <div class="text-muted small">Total Spent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead style="background:#f8f7f4;">
+                        <tr>
+                            <th class="px-4 py-3">#</th>
+                            <th class="py-3">Book</th>
+                            <th class="py-3">Author</th>
+                            <th class="py-3">Price</th>
+                            <th class="py-3">Qty</th>
+                            <th class="py-3">Total</th>
+                            <th class="py-3">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var t in Model)
+                        {
+                            <tr>
+                                <td class="px-4 py-3 text-muted">@i</td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span style="font-size:1.5rem;">📖</span>
+                                        <span class="fw-semibold">@(t.Book?.Title ?? "Unknown")</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 text-muted">@(t.Book?.Author ?? "-")</td>
+                                <td class="py-3">₱@(t.Book?.Price.ToString("N2") ?? "0.00")</td>
+                                <td class="py-3">
+                                    <span class="badge rounded-pill px-3 py-2"
+                                          style="background:#1a1a2e; color:white;">×@t.Quantity</span>
+                                </td>
+                                <td class="py-3 fw-bold" style="color:#e94560;">
+                                    ₱@((t.Quantity * (t.Book?.Price ?? 0)).ToString("N2"))
+                                </td>
+                                <td class="py-3 text-muted small">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    @t.Date.ToString("MMM dd, yyyy")
+                                    <br />
+                                    <span class="text-muted" style="font-size:0.75rem;">@t.Date.ToString("hh:mm tt")</span>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                    <tfoot style="background:#f8f7f4;">
+                        <tr>
+                            <td colspan="5" class="px-4 py-3 fw-bold text-end">Grand Total:</td>
+                            <td class="py-3 fw-bold fs-5" style="color:#e94560;" colspan="2">
+                                ₱@Model.Sum(t => t.Quantity * (t.Book?.Price ?? 0)).ToString("N2")
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}
