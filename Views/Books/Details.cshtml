@@ -3,94 +3,86 @@
     ViewData["Title"] = Model.Title;
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-
-        <a href="/Books/Index" class="btn btn-sm btn-outline-secondary mb-4">
-            <i class="bi bi-arrow-left me-1"></i>Back to Books
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="/Books/Index" class="btn btn-outline-light rounded-pill px-4">
+            <i class="bi bi-arrow-left me-2"></i> Back to Books
         </a>
+    </div>
 
-        <div class="card overflow-hidden">
-            <div class="row g-0">
-                <!-- Book Cover -->
-                <div class="col-md-4">
-                    <div style="height:100%; min-height:280px;
-                        background:linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #e94560 100%);
-                        display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem; padding:2rem;">
-                        <span style="font-size:5rem;">📖</span>
-                        @if (Model.Stock == 0)
-                        {
-                            <span class="badge px-3 py-2" style="background:#e94560; font-size:0.85rem; border-radius:8px;">
-                                Out of Stock
-                            </span>
-                        }
-                        else if (Model.Stock <= 5)
-                        {
-                            <span class="badge px-3 py-2" style="background:#f5a623; font-size:0.85rem; border-radius:8px;">
-                                Only @Model.Stock left!
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge px-3 py-2" style="background:#28a745; font-size:0.85rem; border-radius:8px;">
-                                In Stock
-                            </span>
-                        }
+    <div class="card-glass overflow-hidden p-0 border-0 shadow-lg">
+        <div class="row g-0">
+            <div class="col-md-5 position-relative" style="background: rgba(0,0,0,0.2); min-height: 450px; display: flex; align-items: center; justify-content: center;">
+                @{
+                    // Ensure these filenames match what is actually in your wwwroot/images/books/ folder
+                    string imageUrl = Model.Title switch
+                    {
+                        "Harry Potter and the Sorcerer's Stone" => "/images/books/harry.jpg",
+                        "The Alchemist" => "/images/books/alchemist.jpg",
+                        "Rich Dad Poor Dad" => "/images/books/richdad.jpg",
+                        "To Kill a Mockingbird" => "/images/books/mockingbird.jpg",
+                        "The Great Gatsby" => "/images/books/gatsby.jpg",
+                        "1984" => "/images/books/1984.jpg",
+                        "Atomic Habits" => "/images/books/atomic.jpg",
+                        "The 48 Laws of Power" => "/images/books/48laws.jpg",
+                        _ => ""
+                    };
+                }
+
+                @if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    <img src="@imageUrl" alt="@Model.Title" style="width: 100%; height: 100%; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="text-center opacity-25">
+                        <i class="bi bi-book-half text-white" style="font-size: 6rem;"></i>
+                        <p class="text-white mt-2">Image Not Found</p>
                     </div>
-                </div>
+                }
 
-                <!-- Book Info + Buy Form -->
-                <div class="col-md-8">
-                    <div class="card-body p-4">
-                        <h2 style="font-family:'Playfair Display',serif; font-weight:700;">@Model.Title</h2>
-                        <p class="text-muted mb-3">
-                            <i class="bi bi-person-fill me-1"></i>by <strong>@Model.Author</strong>
-                        </p>
-
-                        <hr />
-
-                        <div class="mb-3">
-                            <span class="d-block text-muted small text-uppercase fw-semibold mb-1">Price</span>
-                            <span style="font-size:2rem; font-weight:700; color:#e94560;">
-                                ₱@Model.Price.ToString("N2")
-                            </span>
-                        </div>
-
-                        <div class="mb-4">
-                            <span class="d-block text-muted small text-uppercase fw-semibold mb-1">Stock Available</span>
-                            <span class="fw-bold @(Model.Stock == 0 ? "text-danger" : Model.Stock <= 5 ? "text-warning" : "text-success")">
-                                <i class="bi bi-boxes me-1"></i>@Model.Stock copies
-                            </span>
-                        </div>
-
-                        @if (Model.Stock > 0)
-                        {
-                            <form method="post" action="/Transaction/Buy">
-                                <input type="hidden" name="bookId" value="@Model.Id" />
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Quantity</label>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <input type="number" name="quantity" value="1" min="1" max="@Model.Stock"
-                                               class="form-control"
-                                               style="width:100px; border-radius:10px; border:2px solid #e8e8e8; padding:0.6rem 1rem;" />
-                                        <span class="text-muted small">max @Model.Stock</span>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-accent px-4 py-2">
-                                    <i class="bi bi-cart-check me-2"></i>Buy Now
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <div class="alert py-2" style="background:#fff3f5; border:1px solid #f5c6cb; border-radius:10px; color:#721c24;">
-                                <i class="bi bi-x-circle me-2"></i>This book is currently out of stock.
-                            </div>
-                        }
-                    </div>
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4">
+                    <span class="badge bg-success px-4 py-2 rounded-pill shadow">In Stock</span>
                 </div>
             </div>
-        </div>
 
+            <div class="col-md-7 bg-white p-5">
+                <h1 class="fw-bold text-dark mb-1" style="font-family: 'Playfair Display', serif;">@Model.Title</h1>
+                <p class="text-muted fs-5 mb-4">by @Model.Author</p>
+                
+                <hr class="my-4">
+
+                <div class="mb-4">
+                    <small class="text-uppercase text-muted fw-bold d-block mb-1">Price</small>
+                    <h2 class="text-danger fw-bold">₱@Model.Price.ToString("N2")</h2>
+                </div>
+
+                <div class="mb-4">
+                    <small class="text-uppercase text-muted fw-bold d-block mb-1">Availability</small>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-2 text-success"></i>
+                        <span class="fw-bold text-dark">@Model.Stock copies available</span>
+                    </div>
+                </div>
+
+                <form asp-controller="Transaction" asp-action="Buy" method="post">
+                    <input type="hidden" name="BookId" value="@Model.Id" />
+                    
+                    <div class="mb-4">
+                        <small class="text-uppercase text-muted fw-bold d-block mb-2">Select Quantity</small>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="number" name="Quantity" value="1" min="1" max="@Model.Stock"
+                                   class="form-control text-dark border-secondary bg-light fw-bold"
+                                   style="width: 100px; height: 45px;" />
+                            <span class="text-muted small">Max: @Model.Stock</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3 rounded-pill fw-bold shadow">
+                        <i class="bi bi-cart-plus me-2"></i> Confirm Purchase
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>

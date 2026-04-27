@@ -1,112 +1,113 @@
 ﻿@model IEnumerable<BookStoreApp.Models.Book>
 @{
-    ViewData["Title"] = "Browse Books";
+    ViewData["Title"] = "Home Page";
 }
 
-
-
-<!-- Page Header -->
-<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-    <div>
-        <h2 style="font-family:'Playfair Display',serif; font-weight:700; margin:0;">
-            📚 Browse Books
-        </h2>
-        <p class="text-muted mb-0">Find your next great read</p>
-    </div>
-
-    @if (ViewBag.IsAdmin != null && ViewBag.IsAdmin)
-    {
-        <p>
-            <a asp-action="Create" class="btn btn-success">Create New Book</a>
-        </p>
-    }
-
-    <!-- Search Bar -->
-    <form method="get" action="/Books/Index" class="d-flex gap-2" style="min-width:300px;">
-        <div class="input-group">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="bi bi-search text-muted"></i>
-            </span>
-            <input type="text" name="search" class="form-control border-start-0 ps-0"
-                   placeholder="Search by title or author..."
-                   value="@ViewBag.Search"
-                   style="border-radius:0 10px 10px 0; border:2px solid #e8e8e8; border-left:none;" />
+<div class="container py-4">
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="h-100 p-5 rounded-4 shadow-lg position-relative overflow-hidden" 
+                 style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: 1px solid rgba(255,255,255,0.1);">
+                <div class="position-relative z-1">
+                    <span class="badge bg-white bg-opacity-20 mb-3 px-3 py-2">Editor's Choice</span>
+                    <h1 class="display-5 fw-bold text-white mb-3" style="font-family: 'Playfair Display', serif;">
+                        Discover your next academic breakthrough.
+                    </h1>
+                    <p class="lead text-white-50 mb-0">
+                        "Access our curated collection of textbooks, research journals, and literary classics."
+                    </p>
+                </div>
+                <i class="bi bi-quote position-absolute bottom-0 end-0 text-white opacity-10" style="font-size: 10rem; transform: translate(20%, 20%);"></i>
+            </div>
         </div>
-        <button type="submit" class="btn btn-accent px-3">Search</button>
-        @if (!string.IsNullOrEmpty(ViewBag.Search as string))
-        {
-            <a href="/Books/Index" class="btn btn-outline-secondary">Clear</a>
-        }
-    </form>
-</div>
 
-<!-- Search Result Info -->
-@if (!string.IsNullOrEmpty(ViewBag.Search as string))
-{
-    <div class="alert py-2 mb-3" style="background:#fff3f5; border:1px solid #f5c6cb; border-radius:10px; color:#721c24;">
-        <i class="bi bi-funnel me-2"></i>
-        Showing results for <strong>"@ViewBag.Search"</strong> — @Model.Count() book(s) found.
-        <a href="/Books/Index" class="ms-2 text-decoration-none" style="color:#e94560;">✕ Clear</a>
+        <div class="col-lg-4">
+            <div class="h-100 p-5 rounded-4 shadow-lg text-white d-flex flex-column justify-content-center" 
+                 style="background: #d35400; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="text-center">
+                    <i class="bi bi-book-half mb-3 fs-1 opacity-50"></i>
+                    <h3 class="fw-bold mb-3">Verse of the Day</h3>
+                    <p class="fst-italic fs-5 mb-3" style="line-height: 1.6;">
+                        "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life."
+                    </p>
+                    <hr class="w-25 mx-auto border-2 opacity-50 mb-3">
+                    <span class="fw-bold text-uppercase ls-2">John 3:16</span>
+                </div>
+            </div>
+        </div>
     </div>
-}
 
-<!-- Books Grid -->
-@if (!Model.Any())
-{
-    <div class="text-center py-5">
-        <div style="font-size:4rem;">📭</div>
-        <h4 class="text-muted mt-3">No books found</h4>
-        <p class="text-muted">Try a different search term.</p>
-        <a href="/Books/Index" class="btn btn-accent mt-2">View All Books</a>
+    <div class="row align-items-center mb-5">
+        <div class="col-md-7">
+            <h1 class="display-4 fw-bold text-white mb-1" style="font-family: 'Playfair Display', serif;">The Collection</h1>
+            <p class="text-white-50">Curated stories for every kind of reader.</p>
+        </div>
+        <div class="col-md-5">
+            <form asp-controller="Books" asp-action="Index" method="get" class="d-flex shadow-sm">
+                <input type="text" name="searchString" class="form-control bg-white bg-opacity-10 border-white border-opacity-10 text-white rounded-start-pill ps-4 shadow-none" 
+                       placeholder="Search by title or author..." style="backdrop-filter: blur(10px);">
+                <button type="submit" class="btn btn-danger rounded-end-pill px-4" style="background-color: #e94560; border: none;">Search</button>
+            </form>
+        </div>
     </div>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+
+    <div class="row g-4">
         @foreach (var book in Model)
         {
-            <div class="col">
-                <div class="card h-100" style="border-radius:16px; overflow:hidden;">
-                    <!-- Book Cover Placeholder -->
-                    <div style="height:160px; background:linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #e94560 100%);
-                        display:flex; align-items:center; justify-content:center; position:relative;">
-                        <span style="font-size:3.5rem;">📖</span>
-                        @if (book.Stock == 0)
+            <div class="col-6 col-md-4 col-lg-3">
+                @* Changed bg-opacity-5 to bg-opacity-10 for better baseline contrast *@
+                <div class="card h-100 bg-white bg-opacity-10 border-white border-opacity-10 rounded-4 overflow-hidden card-hover shadow-sm">
+                    <div class="position-relative d-flex align-items-center justify-content-center" style="height: 300px; background: rgba(0,0,0,0.2);">
+                    
+                        @if (!string.IsNullOrEmpty(book.CoverImage))
                         {
-                            <span class="position-absolute top-0 end-0 m-2 badge"
-                                  style="background:#e94560; border-radius:8px; font-size:0.7rem;">Out of Stock</span>
+                            <img src="/images/books/@book.CoverImage"
+                                 class="card-img-top p-3 rounded-5 w-100 h-100"
+                                 alt="@(book.Title ?? "Book Image")"
+                                 style="object-fit: cover;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        
+                            <i class="bi bi-book text-white-50 fs-1" style="display:none;"></i>
                         }
-                        else if (book.Stock <= 5)
+                        else
                         {
-                            <span class="position-absolute top-0 end-0 m-2 badge"
-                                  style="background:#f5a623; border-radius:8px; font-size:0.7rem;">Low Stock</span>
+                            <i class="bi bi-book text-white-50 fs-1"></i>
+                        }
+
+                        @if (book.Stock < 5 && book.Stock > 0)
+                        {
+                            <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3 shadow-sm">Limited</span>
                         }
                     </div>
-
-                    <div class="card-body d-flex flex-column p-3">
-                        <h6 class="fw-bold mb-1 lh-sm" style="font-family:'Playfair Display',serif; font-size:0.95rem;">
-                            @book.Title
-                        </h6>
-                        <p class="text-muted small mb-2">
-                            <i class="bi bi-person me-1"></i>@book.Author
-                        </p>
-                        <div class="mt-auto">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="fw-bold" style="color:#e94560; font-size:1.1rem;">
-                                    ₱@book.Price.ToString("N2")
-                                </span>
-                                <small class="text-muted">
-                                    <i class="bi bi-boxes me-1"></i>@book.Stock left
-                                </small>
-                            </div>
-                            <a href="/Books/Details/@book.Id"
-                                   class="btn btn-accent btn-sm w-100">
-                                <i class="bi bi-eye me-1"></i>View Details
-                            </a>
-                        </div>
+                
+                    @* Content inside card-body is now explicitly white/visible *@
+                    <div class="card-body text-center pt-3">
+                        <h6 class="text-white fw-bold mb-1" style="opacity: 1 !important;">@(book.Title ?? "Untitled")</h6>
+                        <p class="text-white text-opacity-75 small mb-3">@(book.Author ?? "Unknown Author")</p>
+                        <h5 class="text-danger fw-bold mb-3">₱@book.Price.ToString("N2")</h5>
+                        <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                           class="btn btn-danger rounded-pill w-100 fw-bold" style="background-color: #e94560; border: none;">View Book</a>
                     </div>
                 </div>
             </div>
         }
     </div>
-}
+
+    <style>
+            .card-hover {
+                transition: all 0.3s ease;
+                /* Ensure content is visible by default */
+            }
+    
+                .card-hover:hover {
+                    transform: translateY(-10px);
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
+                }
+
+                /* Force visibility of text titles */
+                .card-hover h6, .card-hover p {
+                    visibility: visible !important;
+                    display: block !important;
+                }
+    </style>

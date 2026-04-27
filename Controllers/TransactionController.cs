@@ -34,6 +34,7 @@ namespace BookStoreApp.Controllers
                 return RedirectToAction("Details", "Books", new { id = bookId });
             }
 
+            // Deduct stock and create record
             book.Stock -= quantity;
 
             var transaction = new Transaction
@@ -41,7 +42,8 @@ namespace BookStoreApp.Controllers
                 UserId = userId.Value,
                 BookId = bookId,
                 Quantity = quantity,
-                Date = DateTime.Now
+                Date = DateTime.Now,
+                Status = "Completed"
             };
 
             _context.Transactions.Add(transaction);
@@ -57,9 +59,9 @@ namespace BookStoreApp.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Account");
 
+            // Fetching transactions with related Book data
             var transactions = await _context.Transactions
                 .Include(t => t.Book)
-                .Include(t => t.User)
                 .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();

@@ -1,149 +1,231 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Security.Claims;
 using BookStoreApp.Data;
 using BookStoreApp.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookStoreApp.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
 
-        public AccountController(ApplicationDbContext context, IWebHostEnvironment env)
+        public AccountController(ApplicationDbContext db, IWebHostEnvironment env)
         {
-            _context = context;
+            _db = db;
             _env = env;
         }
 
-        // GET: /Account/Register
-        public IActionResult Register() => View();
+        // ── Helpers ───────────────────────────────────────────────────────────────
 
-        // POST: /Account/Register
-        [HttpPost]
-        public async Task<IActionResult> Register(string name, string email, string password, IFormFile? profileImage)
+        private bool IsLoggedIn() => HttpContext.Session.GetInt32("UserId") != null;
+
+        private void SetSession(Users user)
         {
-            if (_context.Users.Any(u => u.Email == email))
+            HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserName", user.Name);
+            HttpContext.Session.SetString("UserRole", user.Role);
+        }
+
+        // ── Register (GET) ────────────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (IsLoggedIn()) return RedirectToAction("Index", "Books");
+            return View();
+        }
+
+        // ── Register (POST) ───────────────────────────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> Register(string name, string email,
+                                                   string password, IFormFile? profileImage)
+        {
+            // Basic validation
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password))
             {
-                ViewBag.Error = "Email already registered.";
+                ViewBag.Error = "All fields are required.";
                 return View();
             }
 
+            // Check duplicate email
+            if (_db.Users.Any(u => u.Email == email))
+            {
+                ViewBag.Error = "An account with that email already exists.";
+                return View();
+            }
+
+            // Handle profile image upload
             string? fileName = null;
             if (profileImage != null && profileImage.Length > 0)
             {
-                fileName = Guid.NewGuid() + Path.GetExtension(profileImage.FileName);
+                var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var ext = Path.GetExtension(profileImage.FileName).ToLower();
+                if (!allowed.Contains(ext))
+                {
+                    ViewBag.Error = "Profile image must be jpg, png, gif, or webp.";
+                    return View();
+                }
+
+                fileName = Guid.NewGuid().ToString() + ext;
                 var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
                 using var stream = new FileStream(savePath, FileMode.Create);
                 await profileImage.CopyToAsync(stream);
             }
 
+            // Save user
             var user = new Users
             {
-                Name = name,
-                Email = email,
-                Password = password,
-                ProfileImage = fileName
+                Name = name.Trim(),
+                Email = email.Trim().ToLower(),
+                Password = password,        // TODO: hash with BCrypt in production
+                ProfileImage = fileName,
+                Role = "User"
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Registration successful! Please log in.";
+            TempData["Success"] = "Account created! Please sign in.";
             return RedirectToAction("Login");
         }
 
-        // GET: /Account/Login
-        public IActionResult Login() => View();
-
-        // POST: /Account/Login
-        [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
+        // ── Login (GET) ───────────────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult Login()
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+            if (IsLoggedIn()) return RedirectToAction("Index", "Books");
+            return View();
+        }
 
-            if (user == null)
+        // ── Login (POST) ──────────────────────────────────────────────────────────
+        [HttpPost]
+        public IActionResult Login(string email, string password)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
-                ViewBag.Error = "Invalid email or password.";
+                ViewBag.Error = "Email and password are required.";
                 return View();
             }
 
-            var claims = new List<Claim>
+            var user = _db.Users.FirstOrDefault(
+                u => u.Email == email.Trim().ToLower() && u.Password == password);
+
+            if (user == null)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+                ViewBag.Error = "Incorrect email or password.";
+                return View();
+            }
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
+            SetSession(user);
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
-            HttpContext.Session.SetString("UserName", user.Name);
-
+            TempData["Success"] = $"Welcome back, {user.Name}!";
             return RedirectToAction("Index", "Books");
         }
 
-        // GET: /Account/Logout
-        public async Task<IActionResult> Logout()
+        // ── Logout ────────────────────────────────────────────────────────────────
+        public IActionResult Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             HttpContext.Session.Clear();
+            TempData["Success"] = "You have been logged out.";
             return RedirectToAction("Login");
         }
 
-        // GET: /Account/Profile
-        public async Task<IActionResult> Profile()
+        // ── Profile (GET) ─────────────────────────────────────────────────────────
+        public IActionResult Profile()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login");
+            if (!IsLoggedIn()) return RedirectToAction("Login");
 
-            var user = await _context.Users.FindAsync(userId);
+            var userId = HttpContext.Session.GetInt32("UserId")!.Value;
+            var user = _db.Users.Find(userId);
+
+            if (user == null)
+            {
+                HttpContext.Session.Clear();
+                return RedirectToAction("Login");
+            }
+
+            return View(user);
+        }
+
+        // ── Edit Profile (GET) ────────────────────────────────────────────────────
+        [HttpGet]
+        public IActionResult Edit()
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login");
+
+            var userId = HttpContext.Session.GetInt32("UserId")!.Value;
+            var user = _db.Users.Find(userId);
+
             if (user == null) return RedirectToAction("Login");
 
             return View(user);
         }
 
-        // GET: /Account/Edit
-        public async Task<IActionResult> Edit()
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login");
-
-            var user = await _context.Users.FindAsync(userId);
-            return View(user);
-        }
-
-        // POST: /Account/Edit
+        // ── Edit Profile (POST) ───────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Edit(string name, string email, IFormFile? profileImage)
+        public async Task<IActionResult> Edit(string name, string email, string? newPassword, IFormFile? profileImage)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login");
 
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _db.Users.FindAsync(userId);
             if (user == null) return RedirectToAction("Login");
 
-            user.Name = name;
-            user.Email = email;
+            // Validate name & email
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.Error = "Name and email cannot be empty.";
+                return View(user);
+            }
 
+            // Check email not taken by someone else
+            bool emailTaken = _db.Users.Any(u => u.Email == email.Trim().ToLower()
+                                              && u.Id != userId);
+            if (emailTaken)
+            {
+                ViewBag.Error = "That email is already used by another account.";
+                return View(user);
+            }
+
+            // Handle new profile image
             if (profileImage != null && profileImage.Length > 0)
             {
-                var fileName = Guid.NewGuid() + Path.GetExtension(profileImage.FileName);
+                var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var ext = Path.GetExtension(profileImage.FileName).ToLower();
+                if (!allowed.Contains(ext))
+                {
+                    ViewBag.Error = "Profile image must be jpg, png, gif, or webp.";
+                    return View(user);
+                }
+
+                // Delete old image if it exists
+                if (!string.IsNullOrEmpty(user.ProfileImage))
+                {
+                    var oldPath = Path.Combine(_env.WebRootPath, "images", user.ProfileImage);
+                    if (System.IO.File.Exists(oldPath))
+                        System.IO.File.Delete(oldPath);
+                }
+
+                var fileName = Guid.NewGuid().ToString() + ext;
                 var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
                 using var stream = new FileStream(savePath, FileMode.Create);
                 await profileImage.CopyToAsync(stream);
                 user.ProfileImage = fileName;
             }
 
-            await _context.SaveChangesAsync();
+            // Apply changes
+            user.Name = name.Trim();
+            user.Email = email.Trim().ToLower();
+
+            if (!string.IsNullOrWhiteSpace(newPassword))
+                user.Password = newPassword;   // TODO: hash in production
+
+            await _db.SaveChangesAsync();
+
+            // Refresh session name
             HttpContext.Session.SetString("UserName", user.Name);
+
             TempData["Success"] = "Profile updated successfully!";
             return RedirectToAction("Profile");
         }

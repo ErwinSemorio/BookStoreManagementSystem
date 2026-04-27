@@ -1,51 +1,138 @@
 ﻿@model BookStoreApp.Models.Users
 @{
-    ViewData["Title"] = "My Profile";
+    ViewData["Title"] = "Edit Profile";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-7">
+
+        <a href="/Account/Profile" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left me-1"></i>Back to Profile
+        </a>
+
         <div class="card p-0 overflow-hidden">
-            <!-- Header Banner -->
-            <div style="background: linear-gradient(135deg, #1a1a2e, #e94560); height: 120px; position: relative;">
+
+            <!-- Header Banner with current avatar -->
+            <div style="background: linear-gradient(135deg, #1a1a2e, #e94560); height: 130px; position: relative;">
                 <div style="position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);">
                     @if (!string.IsNullOrEmpty(Model.ProfileImage))
                     {
-                        <img src="/images/@Model.ProfileImage"
-                             style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:4px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.2);" />
+                        <img id="avatarPreview" src="/images/@Model.ProfileImage"
+                             style="width:100px;height:100px;border-radius:50%;object-fit:cover;
+                        border:4px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.2);" />
                     }
                     else
                     {
-                        <div style="width:100px;height:100px;border-radius:50%;background:#e94560;border:4px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);">
-                            <span style="font-size:2.5rem;color:white;font-weight:700;">@Model.Name[0].ToString().ToUpper()</span>
+                        <div id="avatarFallback"
+                             style="width:100px;height:100px;border-radius:50%;background:#e94560;
+                            border:4px solid white;display:flex;align-items:center;
+                            justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);">
+                            <span style="font-size:2.5rem;color:white;font-weight:700;">
+                                @Model.Name[0].ToString().ToUpper()
+                            </span>
                         </div>
+                        <img id="avatarPreview" src="#"
+                             style="width:100px;height:100px;border-radius:50%;object-fit:cover;
+                        border:4px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.2);
+                        display:none;" />
                     }
                 </div>
             </div>
 
-            <!-- Profile Info -->
-            <div class="card-body text-center pt-5 mt-3">
-                <h3 style="font-family:'Playfair Display',serif; font-weight:700;">@Model.Name</h3>
-                <span class="badge rounded-pill px-3 py-2 mb-2"
-                      style="background: @(Model.Role == "Admin" ? "#e94560" : "#1a1a2e"); color:white; font-size:0.8rem;">
-                    <i class="bi bi-@(Model.Role == "Admin" ? "shield-check" : "person-check") me-1"></i>@Model.Role
-                </span>
-                <p class="text-muted mt-2"><i class="bi bi-envelope me-2"></i>@Model.Email</p>
+            <!-- Form -->
+            <div class="card-body pt-5 mt-4 px-4 pb-4">
+                <h4 class="text-center mb-1" style="font-family:'Playfair Display',serif; font-weight:700;">
+                    Edit Profile
+                </h4>
+                <p class="text-center text-muted small mb-4">Update your account information</p>
 
-                <hr class="my-3" />
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger rounded-3 py-2">
+                        <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
+                    </div>
+                }
 
-                <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <a href="/Account/Edit" class="btn btn-accent px-4">
-                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                    </a>
-                    <a href="/Transaction/History" class="btn btn-outline-secondary px-4">
-                        <i class="bi bi-clock-history me-2"></i>My Orders
-                    </a>
-                    <a href="/Books/Index" class="btn btn-outline-secondary px-4">
-                        <i class="bi bi-book me-2"></i>Browse Books
-                    </a>
-                </div>
+                <form method="post" action="/Account/Edit" enctype="multipart/form-data">
+
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-person me-1" style="color:#e94560;"></i>Full Name
+                        </label>
+                        <input type="text" name="name" value="@Model.Name"
+                               class="form-control"
+                               style="border-radius:10px; border:2px solid #e8e8e8; padding:0.75rem 1rem;"
+                               required />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-envelope me-1" style="color:#e94560;"></i>Email Address
+                        </label>
+                        <input type="email" name="email" value="@Model.Email"
+                               class="form-control"
+                               style="border-radius:10px; border:2px solid #e8e8e8; padding:0.75rem 1rem;"
+                               required />
+                    </div>
+
+                    <!-- New Password (optional) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-lock me-1" style="color:#e94560;"></i>New Password
+                            <span class="text-muted fw-normal">(leave blank to keep current)</span>
+                        </label>
+                        <input type="password" name="newPassword"
+                               class="form-control"
+                               style="border-radius:10px; border:2px solid #e8e8e8; padding:0.75rem 1rem;"
+                               placeholder="••••••••" />
+                    </div>
+
+                    <!-- Profile Picture -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-image me-1" style="color:#e94560;"></i>Profile Picture
+                            <span class="text-muted fw-normal">(optional)</span>
+                        </label>
+                        <input type="file" name="profileImage" id="profileInput"
+                               class="form-control"
+                               style="border-radius:10px; border:2px solid #e8e8e8; padding:0.75rem 1rem;"
+                               accept="image/*"
+                               onchange="previewImage(this)" />
+                        <small class="text-muted">Accepted: jpg, png, gif, webp</small>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-accent px-4 py-2">
+                            <i class="bi bi-check-lg me-2"></i>Save Changes
+                        </button>
+                        <a href="/Account/Profile" class="btn btn-outline-secondary px-4 py-2">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function previewImage(input) {
+            const preview  = document.getElementById('avatarPreview');
+            const fallback = document.getElementById('avatarFallback');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    if (fallback) fallback.style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
