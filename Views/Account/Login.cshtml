@@ -2,13 +2,21 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="col-md-6 col-lg-5">
-        <div class="card bg-dark text-white p-5 shadow-lg border-0" style="border-radius: 20px; background-color: rgba(30, 30, 50, 0.9) !important;">
-            <div class="text-center mb-4">
-                <img src="~/images/logo.png" width="60" class="mb-3" alt="Logo" asp-append-version="true">
+        <div class="card bg-dark text-white p-5 shadow-lg border-0" style="border-radius: 40px; background-color: rgba(30, 30, 50, 0.9) !important;">
+            
+            <div class="text-center mb-4 d-flex flex-column align-items-center">
+                @* Large transparent logo for professional branding *@
+                <img src="/images/books/logo.png"
+                     height="250"
+                     class="mb-3"
+                     alt="BookStore Hero"
+                     asp-append-version="true"
+                     style="object-fit: contain; width: auto;">
+                
                 <h2 class="fw-bold" style="font-family:'Playfair Display', serif;">Welcome Back</h2>
-                <p class="text-white-50">Sign in to continue to BookStore</p>
+                <p class="text-white-50 small">Sign in to continue to BookStore</p>
             </div>
 
             @if (ViewBag.Error != null)

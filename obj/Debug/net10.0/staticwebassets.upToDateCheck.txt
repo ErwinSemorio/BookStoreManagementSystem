@@ -1,8 +1,13 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\images\a9dc3eda-dbbf-42c5-9446-3daf607e72ea.png
+wwwroot\images\books\1984.jpg
 wwwroot\images\books\alchemist.jpg
+wwwroot\images\books\gatsby.jpg
 wwwroot\images\books\harry.jpg
 wwwroot\images\books\logo.png
+wwwroot\images\books\mockingbird.jpg
+wwwroot\images\books\richdad.jpg
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -64,6 +69,8 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
+C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
+C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\js\site.js
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\LICENSE.txt
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\dist\jquery.slim.min.map
@@ -122,7 +129,5 @@ C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bo
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
-C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
-C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\favicon.ico
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\css\site.css

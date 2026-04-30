@@ -7,78 +7,145 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register - BookStore</title>
+    <title>Register - ScholarlyBooks</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #0d1117;
+            --border-color: #30363d;
+            --text-primary: #ffffff;
+            --text-secondary: #8b949e;
+            --accent-green: #238636;
+            --accent-blue: #58a6ff;
+        }
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             padding: 2rem 0;
         }
+        .auth-container { max-width: 1000px; width: 100%; margin: auto; }
         .auth-card {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.3);
-            overflow: hidden;
-            max-width: 480px;
-            width: 100%;
-            margin: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
-        .auth-header {
-            background: linear-gradient(135deg, #1a1a2e, #e94560);
-            padding: 2rem 2rem 1.5rem;
-            text-align: center;
-            color: white;
-        }
-        .auth-header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0; }
-        .auth-header p { opacity: 0.8; margin: 0.4rem 0 0; }
-        .auth-body { padding: 2rem; }
-        .form-label { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: #555; }
+        .auth-header { text-align: center; margin-bottom: 2rem; }
+        .auth-header h1 { color: var(--text-primary); font-weight: 700; font-size: 1.75rem; margin: 0; }
+        .auth-header p { color: var(--text-secondary); margin: 0.5rem 0 0; font-size: 0.95rem; }
+        .form-label { font-weight: 500; font-size: 0.85rem; color: var(--text-secondary) !important; margin-bottom: 0.5rem; }
         .form-control {
-            border-radius: 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary) !important;
+            border-radius: 8px;
             padding: 0.75rem 1rem;
-            border: 2px solid #e8e8e8;
-            transition: border-color 0.2s;
+            font-size: 0.95rem;
         }
-        .form-control:focus { border-color: #e94560; box-shadow: 0 0 0 3px rgba(233,69,96,0.1); }
+        .form-control::placeholder { color: var(--text-secondary); opacity: 1; }
+        .form-control:focus {
+            background: var(--bg-input);
+            border-color: var(--accent-blue);
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+        .input-group-text {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-right: none;
+            color: var(--text-secondary);
+            border-radius: 8px 0 0 8px;
+        }
+        .input-group .form-control { border-radius: 0 8px 8px 0; border-left: none; }
         .btn-register {
-            background: linear-gradient(135deg, #e94560, #c73652);
-            color: white;
+            background: var(--accent-green);
+            color: white !important;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 0.75rem;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 1rem;
             width: 100%;
-            transition: transform 0.1s, box-shadow 0.2s;
+            transition: all 0.2s;
         }
-        .btn-register:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(233,69,96,0.4); color: white; }
-        .preview-wrap { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+        .btn-register:hover {
+            background: #2ea043;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4);
+        }
+        .preview-wrap { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; }
         #imgPreview {
-            width: 70px; height: 70px; border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #e94560;
-            display: none;
+            width: 60px; height: 60px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--accent-blue);
+            display: none; background: var(--bg-input);
+        }
+        .auth-footer {
+            text-align: center; margin-top: 1.5rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .auth-footer a { color: var(--accent-blue) !important; text-decoration: none; font-weight: 600; }
+        .auth-footer a:hover { text-decoration: underline; }
+        .alert {
+            background: rgba(248, 81, 73, 0.15);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+            color: #f85149 !important;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        /* Responsive layout - safely escaped for Razor */
+        @@media (min-width: 992px) {
+            .auth-split { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: center; }
+            .auth-brand { padding: 2rem; }
+            .auth-brand h1 { font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 1rem; }
+            .auth-brand p { color: var(--text-secondary); font-size: 1.1rem; line-height: 1.6; }
+            .brand-badges { display: flex; gap: 1rem; margin-top: 2rem; }
+            .brand-badge {
+                background: var(--bg-card); border: 1px solid var(--border-color);
+                border-radius: 12px; padding: 1rem; text-align: center; flex: 1;
+            }
+            .brand-badge i { font-size: 1.5rem; color: var(--accent-blue); }
+            .brand-badge div { color: white; font-weight: 600; margin-top: 0.5rem; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="auth-card mx-auto">
-            <div class="auth-header">
-                <span style="font-size:2.5rem; display:block; margin-bottom:0.3rem">📚</span>
-                <h1>Create Account</h1>
-                <p>Join BookStore today</p>
+    <div class="auth-container">
+        <div class="auth-split">
+            <!-- Left: Branding (Desktop Only) -->
+            <div class="auth-brand d-none d-lg-block">
+                <h1>ScholarlyBooks</h1>
+                <p>Empowering researchers and academic institutions with precise inventory management and seamless digital lending.</p>
+                <div class="brand-badges">
+                    <div class="brand-badge">
+                        <i class="bi bi-globe2"></i>
+                        <div>Global Archive</div>
+                    </div>
+                    <div class="brand-badge">
+                        <i class="bi bi-graph-up"></i>
+                        <div>Smart Insights</div>
+                    </div>
+                </div>
             </div>
-            <div class="auth-body">
+
+            <!-- Right: Register Form -->
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Join ScholarlyBooks today</p>
+                </div>
+
                 @if (ViewBag.Error != null)
                 {
-                    <div class="alert alert-danger rounded-3 py-2">
+                    <div class="alert mb-4">
                         <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
                     </div>
                 }
@@ -86,36 +153,46 @@
                 <form method="post" action="/Account/Register" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Juan dela Cruz" required />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Dr. Arthur Scholar" required />
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email Address</label>
-                        <input type="email" name="email" class="form-control" placeholder="you@example.com" required />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" name="email" class="form-control" placeholder="scholar@university.edu" required />
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="••••••••" required />
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Profile Picture <span class="text-muted fw-normal">(optional)</span></label>
-                        <input type="file" name="profileImage" class="form-control" accept="image/*" id="profileInput" onchange="previewImage(this)" />
-                        <div class="preview-wrap mt-2">
-                            <img id="imgPreview" src="#" alt="Preview" />
-                            <small class="text-muted" id="previewText"></small>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" required />
                         </div>
                     </div>
-                    <button type="submit" class="btn-register mb-3">
+                    <div class="mb-4">
+                        <label class="form-label">Profile Picture <span class="text-secondary">(optional)</span></label>
+                        <input type="file" name="profileImage" class="form-control" accept="image/*" id="profileInput" onchange="previewImage(this)" />
+                        <div class="preview-wrap">
+                            <img id="imgPreview" src="#" alt="Preview" />
+                            <small class="text-secondary" id="previewText"></small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-register">
                         <i class="bi bi-person-plus me-2"></i>Create Account
                     </button>
                 </form>
 
-                <div class="text-center">
-                    <span class="text-muted small">Already have an account?</span>
-                    <a href="/Account/Login" class="ms-1 fw-bold text-decoration-none" style="color:#e94560">Sign In</a>
+                <div class="auth-footer">
+                    <span class="text-secondary small">Already have an account?</span>
+                    <a href="/Account/Login" class="ms-1">Sign In</a>
                 </div>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function previewImage(input) {

@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using BookStoreApp.Data;
+using Microsoft.AspNetCore.Http;
 using BookStoreApp.Models;
+using BookStoreApp.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
 
 namespace BookStoreApp.Controllers
 {
@@ -14,59 +18,90 @@ namespace BookStoreApp.Controllers
             _context = context;
         }
 
-        // POST: /Transaction/Buy
-        [HttpPost]
-        public async Task<IActionResult> Buy(int bookId, int quantity)
+        [HttpGet]
+        public IActionResult Confirm(int id, int quantity = 1)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "Account");
+            var book = _context.Books.FirstOrDefault(b => b.Id == id);
+            if (book == null) return NotFound();
 
-            var book = await _context.Books.FindAsync(bookId);
-            if (book == null)
-            {
-                TempData["Error"] = "Book not found.";
-                return RedirectToAction("Index", "Books");
-            }
+            var userId = HttpContext.Session.GetInt32("UserId"); // NO SPACE
+            if (userId == null) return RedirectToAction("Login", "Account"); // NO SPACE
 
-            if (book.Stock < quantity)
-            {
-                TempData["Error"] = $"Not enough stock. Only {book.Stock} left.";
-                return RedirectToAction("Details", "Books", new { id = bookId });
-            }
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (user == null) return RedirectToAction("Login", "Account");
 
-            // Deduct stock and create record
-            book.Stock -= quantity;
+            ViewBag.User = user;
+            ViewBag.Quantity = quantity;
 
-            var transaction = new Transaction
-            {
-                UserId = userId.Value,
-                BookId = bookId,
-                Quantity = quantity,
-                Date = DateTime.Now,
-                Status = "Completed"
-            };
-
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Successfully purchased {quantity} copy(ies) of \"{book.Title}\"!";
-            return RedirectToAction("History");
+            return View(book);
         }
 
-        // GET: /Transaction/History
-        public async Task<IActionResult> History()
+        [HttpPost]
+        public IActionResult PlaceOrder(int bookId, int quantity)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId"); // NO SPACE
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Find(userId);
+            var book = _context.Books.Find(bookId);
+
+            if (user == null || book == null) return BadRequest();
+
+            decimal totalAmount = book.Price * quantity;
+            decimal wallet = user.WalletBalance ?? 0m;
+
+            if (wallet < totalAmount)
+            {
+                TempData["Error"] = "Insufficient funds.";
+                return RedirectToAction("Confirm", new { id = bookId, quantity = quantity });
+            }
+
+            using (var dbTransaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    user.WalletBalance = wallet - totalAmount;
+                    book.Stock -= quantity;
+
+                    var transaction = new Transaction
+                    {
+                        UserId = user.Id,
+                        BookId = book.Id,
+                        Quantity = quantity,
+                        TotalAmount = totalAmount,
+                        TransactionDate = DateTime.Now,
+                        Status = "Completed"
+                    };
+
+                    _context.Transactions.Add(transaction);
+                    _context.SaveChanges();
+
+                    dbTransaction.Commit();
+                    TempData["Success"] = "Purchase successful!";
+                    return RedirectToAction("History");
+                }
+                catch
+                {
+                    dbTransaction.Rollback();
+                    TempData["Error"] = "Transaction failed.";
+                    return RedirectToAction("Confirm", new { id = bookId, quantity = quantity });
+                }
+            }
+        }
+
+        [HttpGet]
+        public IActionResult History()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            // Fetching transactions with related Book data
-            var transactions = await _context.Transactions
+            var history = _context.Transactions
                 .Include(t => t.Book)
                 .Where(t => t.UserId == userId)
-                .OrderByDescending(t => t.Date)
-                .ToListAsync();
+                .OrderByDescending(t => t.TransactionDate)
+                .ToList();
 
-            return View(transactions);
+            return View(history);
         }
     }
 }

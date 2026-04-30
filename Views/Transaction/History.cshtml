@@ -1,129 +1,97 @@
 ﻿@model IEnumerable<BookStoreApp.Models.Transaction>
 @{
-    ViewData["Title"] = "Transaction History";
-    var totalSpent = Model.Sum(t => t.Quantity * (t.Book?.Price ?? 0));
-    var totalUnits = Model.Sum(t => t.Quantity);
-    var lastDate = Model.FirstOrDefault()?.Date.ToString("MMM dd, yyyy") ?? "No Transactions";
+    ViewData["Title"] = "History";
+    var user = ViewBag.User as BookStoreApp.Models.Users;
 }
 
-<div class="container py-5 text-white">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="fw-bold mb-1" style="font-family: 'Playfair Display', serif;">Transaction History</h1>
-            <p class="text-white-50">Manage and review all your recent book purchases and library rentals.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-light rounded-pill px-4 btn-sm border-opacity-25">
-                <i class="bi bi-filter me-2"></i>Filter
-            </button>
-            <button class="btn btn-danger rounded-pill px-4 btn-sm fw-bold" style="background-color: #e94560; border: none;">
-                <i class="bi bi-download me-2"></i>Export CSV
-            </button>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="p-4 rounded-4 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                <span class="small text-white-50 fw-bold text-uppercase" style="letter-spacing: 1px;">Total Spent</span>
-                <h2 class="fw-bold mb-0 mt-1">₱@totalSpent.ToString("N2")</h2>
+<div class="container py-5">
+    <!-- 1. Header Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-5">
+            <div class="wallet-card h-100 d-flex flex-column justify-content-center">
+                <small class="text-white text-opacity-75 text-uppercase fw-bold">Available Balance</small>
+                <h2 class="text-white fw-bold my-2">₱@(user?.WalletBalance?.ToString("N2") ?? "0.00")</h2>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/Account/ReloadWallet" class="btn btn-light btn-sm fw-bold text-primary"><i class="bi bi-plus-circle me-1"></i>Deposit</a>
+                    <button class="btn btn-outline-light btn-sm border-0">Withdraw</button>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="p-4 rounded-4 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                <span class="small text-white-50 fw-bold text-uppercase" style="letter-spacing: 1px;">Units Purchased</span>
-                <h2 class="fw-bold mb-0 mt-1">@totalUnits Units</h2>
+            <div class="card h-100 p-4 d-flex align-items-center justify-content-center">
+                <div class="text-center">
+                    <i class="bi bi-receipt text-primary display-6 mb-2"></i>
+                    <h4 class="text-white mb-0">142 Items</h4>
+                    <small class="text-secondary">Total Transactions</small>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="p-4 rounded-4 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                <span class="small text-white-50 fw-bold text-uppercase" style="letter-spacing: 1px;">Last Transaction</span>
-                <h2 class="fw-bold mb-0 mt-1">@lastDate</h2>
+        <div class="col-md-3">
+            <div class="card h-100 p-4 d-flex align-items-center justify-content-center">
+                <div class="text-center">
+                    <i class="bi bi-box-seam text-warning display-6 mb-2"></i>
+                    <h4 class="text-white mb-0">3 Orders</h4>
+                    <small class="text-secondary">Pending Verification</small>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card bg-transparent border-0">
-        <div class="table-responsive rounded-4 overflow-hidden shadow-lg" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
-            <table class="table table-dark table-hover mb-0 align-middle">
-                <thead class="text-white-50" style="background: rgba(255,255,255,0.05);">
+    <!-- 2. Table -->
+    <div class="card overflow-hidden">
+        <div class="p-4 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+            <h5 class="text-white mb-0">Transaction History</h5>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-custom"><i class="bi bi-filter"></i> Filter</button>
+                <button class="btn btn-sm btn-outline-custom"><i class="bi bi-download"></i> Export</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
                     <tr>
-                        <th class="ps-4 py-3 border-0 small">BOOK NAME</th>
-                        <th class="py-3 border-0 small">AUTHOR</th>
-                        <th class="py-3 border-0 small">PRICE</th>
-                        <th class="py-3 border-0 small">DATE PURCHASED</th>
-                        <th class="py-3 border-0 small">STATUS</th>
-                        <th class="py-3 border-0"></th>
+                        <th>Book Name</th>
+                        <th>Date Purchased</th>
+                        <th>Status</th>
+                        <th class="text-end">Amount</th>
                     </tr>
                 </thead>
-                <tbody class="border-0">
-                    @foreach (var t in Model)
+                <tbody>
+                    @if (!Model.Any())
                     {
-                        <tr>
-                            <td class="ps-4 py-3 border-0">
-                                <div class="d-flex align-items-center">
-                                    @{
-                                        string imageUrl = t.Book?.Title switch
-                                        {
-                                            "Harry Potter and the Sorcerer's Stone" => "/images/books/harry.jpg",
-                                            "The Alchemist" => "/images/books/alchemist.jpg",
-                                            "Rich Dad Poor Dad" => "/images/books/richdad.jpg",
-                                            "To Kill a Mockingbird" => "/images/books/mockingbird.jpg",
-                                            "The Great Gatsby" => "/images/books/gatsby.jpg",
-                                            "1984" => "/images/books/1984.jpg",
-                                            "Atomic Habits" => "/images/books/atomic.jpg",
-                                            "The 48 Laws of Power" => "/images/books/48laws.jpg",
-                                            _ => ""
-                                        };
-                                    }
-                                    @if (!string.IsNullOrEmpty(imageUrl))
+                        <tr><td colspan="4" class="text-center py-5 text-secondary">No transactions found.</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="/images/books/@(item.Book?.CoverImage ?? "default.jpg")" class="rounded me-3" style="width: 40px; height: 50px; object-fit: cover;" />
+                                        <div>
+                                            <div class="text-white fw-bold small">@item.Book?.Title</div>
+                                            <small class="text-secondary">@item.Book?.Author</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-secondary">@item.TransactionDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    @if (item.Status == "Completed")
                                     {
-                                        <img src="@imageUrl" class="rounded me-3" width="40" height="55" style="object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">COMPLETED</span>
                                     }
                                     else
                                     {
-                                        <div class="rounded me-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 55px;">
-                                            <i class="bi bi-book small text-white-50"></i>
-                                        </div>
+                                        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">PROCESSING</span>
                                     }
-                                    <span class="fw-bold">@(t.Book?.Title ?? "Unknown Book")</span>
-                                </div>
-                            </td>
-                            <td class="py-3 border-0 text-white-50">@(t.Book?.Author ?? "-")</td>
-                            <td class="py-3 border-0 fw-bold">₱@(t.Book?.Price.ToString("N2") ?? "0.00")</td>
-                            <td class="py-3 border-0 text-white-50">@t.Date.ToString("MMM dd, yyyy")</td>
-                            <td class="py-3 border-0">
-                                @if (t.Status == "Completed")
-                                {
-                                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2" style="font-size: 0.75rem;">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Completed
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2" style="font-size: 0.75rem;">
-                                        <i class="bi bi-clock-history me-1"></i> Processing
-                                    </span>
-                                }
-                            </td>
-                            <td class="text-end pe-4 border-0">
-                                <button class="btn btn-sm text-white-50"><i class="bi bi-three-dots"></i></button>
-                            </td>
-                        </tr>
+                                </td>
+                                <td class="text-end fw-bold text-white">-₱@item.TotalAmount.ToString("N2")</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-
-<style>
-    .table-hover tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        transition: background 0.3s ease;
-    }
-
-    .table td {
-        border-top: 1px solid rgba(255,255,255,0.05) !important;
-    }
-</style>

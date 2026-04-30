@@ -65,13 +65,14 @@
                     </div>
                 </div>
 
-                <form asp-controller="Transaction" asp-action="Buy" method="post">
-                    <input type="hidden" name="BookId" value="@Model.Id" />
+                <!-- ✅ UPDATED FORM: Routes to Confirm page (GET) for balance review -->
+                <form asp-controller="Transaction" asp-action="Confirm" method="get">
+                    <input type="hidden" name="id" value="@Model.Id" />
                     
                     <div class="mb-4">
                         <small class="text-uppercase text-muted fw-bold d-block mb-2">Select Quantity</small>
                         <div class="d-flex align-items-center gap-3">
-                            <input type="number" name="Quantity" value="1" min="1" max="@Model.Stock"
+                            <input type="number" name="quantity" value="1" min="1" max="@Model.Stock"
                                    class="form-control text-dark border-secondary bg-light fw-bold"
                                    style="width: 100px; height: 45px;" />
                             <span class="text-muted small">Max: @Model.Stock</span>

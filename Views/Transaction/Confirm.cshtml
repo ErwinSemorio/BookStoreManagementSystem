@@ -1,0 +1,70 @@
+﻿@model BookStoreApp.Models.Book
+@{
+    ViewData["Title"] = "Confirm Purchase";
+    var user = ViewBag.User as BookStoreApp.Models.Users;
+    int qty = ViewBag.Quantity as int? ?? 1;
+    
+    decimal total = Model.Price * qty;
+    decimal wallet = user?.WalletBalance ?? 0m;
+    decimal remaining = wallet - total;
+    bool canAfford = wallet >= total;
+}
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="card shadow-lg" style="width: 100%; max-width: 500px; border: 1px solid var(--border-color);">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
+                <h3 class="text-white mb-1">Confirm Purchase</h3>
+                <p class="text-secondary small">Please review the transaction details below.</p>
+            </div>
+
+            <!-- Book Info -->
+            <div class="bg-dark bg-opacity-50 rounded p-3 mb-4 d-flex align-items-center border border-secondary border-opacity-25">
+                <img src="/images/books/@(Model.CoverImage ?? "default.jpg")" class="rounded me-3" style="width: 60px; height: 80px; object-fit: cover;" />
+                <div>
+                    <h5 class="text-white mb-1">@Model.Title</h5>
+                    <p class="text-secondary small mb-0">@Model.Author</p>
+                </div>
+            </div>
+
+            <!-- Financials -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary small">Current Balance</span>
+                    <span class="text-white fw-bold">₱@wallet.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary small">Transaction Total</span>
+                    <span class="text-danger-custom fw-bold">-₱@total.ToString("N2")</span>
+                </div>
+                <hr class="border-secondary border-opacity-25">
+                <div class="d-flex justify-content-between pt-2">
+                    <span class="text-white fw-bold">Remaining Balance</span>
+                    <span class="fw-bold @(canAfford ? "text-success" : "text-danger-custom")">@remaining.ToString("N2")</span>
+                </div>
+            </div>
+
+            @if (!canAfford)
+            {
+                <div class="alert alert-danger bg-danger bg-opacity-10 border-0 text-danger small mb-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Insufficient balance.
+                </div>
+            }
+
+            <form asp-action="PlaceOrder" method="post">
+                <input type="hidden" name="bookId" value="@Model.Id" />
+                <input type="hidden" name="quantity" value="@qty" />
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary-custom" @(canAfford ? "" : "disabled")>
+                        <i class="bi bi-check-circle me-2"></i>Confirm Purchase
+                    </button>
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-custom text-decoration-none">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

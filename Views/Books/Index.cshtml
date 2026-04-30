@@ -6,7 +6,7 @@
 <div class="container py-4">
     <div class="row g-4 mb-5">
         <div class="col-lg-8">
-            <div class="h-100 p-5 rounded-4 shadow-lg position-relative overflow-hidden" 
+            <div class="h-100 p-5 rounded-4 shadow-lg position-relative overflow-hidden"
                  style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: 1px solid rgba(255,255,255,0.1);">
                 <div class="position-relative z-1">
                     <span class="badge bg-white bg-opacity-20 mb-3 px-3 py-2">Editor's Choice</span>
@@ -22,7 +22,7 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="h-100 p-5 rounded-4 shadow-lg text-white d-flex flex-column justify-content-center" 
+            <div class="h-100 p-5 rounded-4 shadow-lg text-white d-flex flex-column justify-content-center"
                  style="background: #d35400; border: 1px solid rgba(255,255,255,0.1);">
                 <div class="text-center">
                     <i class="bi bi-book-half mb-3 fs-1 opacity-50"></i>
@@ -40,74 +40,97 @@
     <div class="row align-items-center mb-5">
         <div class="col-md-7">
             <h1 class="display-4 fw-bold text-white mb-1" style="font-family: 'Playfair Display', serif;">The Collection</h1>
-            <p class="text-white-50">Curated stories for every kind of reader.</p>
+            <p class="text-white-50">
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <span>Showing results for "<strong>@ViewData["CurrentFilter"]</strong>"</span>
+                }
+                else
+                {
+                    <span>Curated stories for every kind of reader.</span>
+                }
+            </p>
         </div>
         <div class="col-md-5">
-            <form asp-controller="Books" asp-action="Index" method="get" class="d-flex shadow-sm">
-                <input type="text" name="searchString" class="form-control bg-white bg-opacity-10 border-white border-opacity-10 text-white rounded-start-pill ps-4 shadow-none" 
+            <form asp-action="Index" method="get" class="d-flex shadow-sm">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
+                       class="form-control bg-white bg-opacity-10 border-white border-opacity-10 text-white rounded-start-pill ps-4 shadow-none"
                        placeholder="Search by title or author..." style="backdrop-filter: blur(10px);">
                 <button type="submit" class="btn btn-danger rounded-end-pill px-4" style="background-color: #e94560; border: none;">Search</button>
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <a asp-action="Index" class="btn btn-link text-white-50 ms-2 text-decoration-none">Clear</a>
+                }
             </form>
         </div>
     </div>
 
     <div class="row g-4">
-        @foreach (var book in Model)
+        @if (!Model.Any())
         {
-            <div class="col-6 col-md-4 col-lg-3">
-                @* Changed bg-opacity-5 to bg-opacity-10 for better baseline contrast *@
-                <div class="card h-100 bg-white bg-opacity-10 border-white border-opacity-10 rounded-4 overflow-hidden card-hover shadow-sm">
-                    <div class="position-relative d-flex align-items-center justify-content-center" style="height: 300px; background: rgba(0,0,0,0.2);">
-                    
-                        @if (!string.IsNullOrEmpty(book.CoverImage))
-                        {
-                            <img src="/images/books/@book.CoverImage"
-                                 class="card-img-top p-3 rounded-5 w-100 h-100"
-                                 alt="@(book.Title ?? "Book Image")"
-                                 style="object-fit: cover;"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        
-                            <i class="bi bi-book text-white-50 fs-1" style="display:none;"></i>
-                        }
-                        else
-                        {
-                            <i class="bi bi-book text-white-50 fs-1"></i>
-                        }
-
-                        @if (book.Stock < 5 && book.Stock > 0)
-                        {
-                            <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3 shadow-sm">Limited</span>
-                        }
-                    </div>
-                
-                    @* Content inside card-body is now explicitly white/visible *@
-                    <div class="card-body text-center pt-3">
-                        <h6 class="text-white fw-bold mb-1" style="opacity: 1 !important;">@(book.Title ?? "Untitled")</h6>
-                        <p class="text-white text-opacity-75 small mb-3">@(book.Author ?? "Unknown Author")</p>
-                        <h5 class="text-danger fw-bold mb-3">₱@book.Price.ToString("N2")</h5>
-                        <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
-                           class="btn btn-danger rounded-pill w-100 fw-bold" style="background-color: #e94560; border: none;">View Book</a>
-                    </div>
-                </div>
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search text-white-50 mb-3" style="font-size: 3rem;"></i>
+                <h3 class="text-white">No books found.</h3>
+                <p class="text-white-50">Try searching for a different title or author.</p>
+                <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 mt-2">View All Books</a>
             </div>
         }
-    </div>
+        else
+        {
+            @foreach (var book in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 bg-white bg-opacity-10 border-white border-opacity-10 rounded-4 overflow-hidden card-hover shadow-sm">
+                        <div class="position-relative d-flex align-items-center justify-content-center" style="height: 300px; background: rgba(0,0,0,0.2);">
+                        
+                            @if (!string.IsNullOrEmpty(book.CoverImage))
+                            {
+                                <img src="/images/books/@book.CoverImage"
+                                     class="card-img-top p-3 rounded-5 w-100 h-100"
+                                     alt="@(book.Title ?? "Book Image")"
+                                     style="object-fit: cover;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            
+                                <i class="bi bi-book text-white-50 fs-1" style="display:none;"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-book text-white-50 fs-1"></i>
+                            }
 
-    <style>
-            .card-hover {
-                transition: all 0.3s ease;
-                /* Ensure content is visible by default */
+                            @if (book.Stock < 5 && book.Stock > 0)
+                            {
+                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-3 me-3 shadow-sm">Limited</span>
+                            }
+                        </div>
+                    
+                        <div class="card-body text-center pt-3">
+                            <h6 class="text-white fw-bold mb-1" style="opacity: 1 !important;">@(book.Title ?? "Untitled")</h6>
+                            <p class="text-white text-opacity-75 small mb-3">@(book.Author ?? "Unknown Author")</p>
+                            <h5 class="text-danger fw-bold mb-3">₱@book.Price.ToString("N2")</h5>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                               class="btn btn-danger rounded-pill w-100 fw-bold" style="background-color: #e94560; border: none;">View Book</a>
+                        </div>
+                    </div>
+                </div>
             }
-    
-                .card-hover:hover {
-                    transform: translateY(-10px);
-                    background: rgba(255, 255, 255, 0.15) !important;
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
-                }
+        }
+    </div>
+</div>
 
-                /* Force visibility of text titles */
-                .card-hover h6, .card-hover p {
-                    visibility: visible !important;
-                    display: block !important;
-                }
-    </style>
+<style>
+    .card-hover {
+
+        transition: all 0.3s ease;
+    }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
+        }
+
+        .card-hover h6, .card-hover p {
+            visibility: visible !important;
+            display: block !important;
+        }
+</style>

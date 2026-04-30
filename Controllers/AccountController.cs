@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using BookStoreApp.Data;
 using BookStoreApp.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+using System.IO;
 
 namespace BookStoreApp.Controllers
 {
@@ -15,18 +20,15 @@ namespace BookStoreApp.Controllers
             _env = env;
         }
 
-        // ── Helpers ───────────────────────────────────────────────────────────────
-
         private bool IsLoggedIn() => HttpContext.Session.GetInt32("UserId") != null;
 
         private void SetSession(Users user)
         {
             HttpContext.Session.SetInt32("UserId", user.Id);
-            HttpContext.Session.SetString("UserName", user.Name);
-            HttpContext.Session.SetString("UserRole", user.Role);
+            HttpContext.Session.SetString("UserName", user.Name ?? "User");
+            HttpContext.Session.SetString("UserRole", user.Role ?? "User");
         }
 
-        // ── Register (GET) ────────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Register()
         {
@@ -34,28 +36,21 @@ namespace BookStoreApp.Controllers
             return View();
         }
 
-        // ── Register (POST) ───────────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Register(string name, string email,
-                                                   string password, IFormFile? profileImage)
+        public async Task<IActionResult> Register(string name, string email, string password, IFormFile? profileImage)
         {
-            // Basic validation
-            if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 ViewBag.Error = "All fields are required.";
                 return View();
             }
 
-            // Check duplicate email
             if (_db.Users.Any(u => u.Email == email))
             {
                 ViewBag.Error = "An account with that email already exists.";
                 return View();
             }
 
-            // Handle profile image upload
             string? fileName = null;
             if (profileImage != null && profileImage.Length > 0)
             {
@@ -73,14 +68,14 @@ namespace BookStoreApp.Controllers
                 await profileImage.CopyToAsync(stream);
             }
 
-            // Save user
             var user = new Users
             {
                 Name = name.Trim(),
                 Email = email.Trim().ToLower(),
-                Password = password,        // TODO: hash with BCrypt in production
+                Password = password,
                 ProfileImage = fileName,
-                Role = "User"
+                Role = "User",
+                WalletBalance = 1000.00m
             };
 
             _db.Users.Add(user);
@@ -90,7 +85,6 @@ namespace BookStoreApp.Controllers
             return RedirectToAction("Login");
         }
 
-        // ── Login (GET) ───────────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Login()
         {
@@ -98,7 +92,6 @@ namespace BookStoreApp.Controllers
             return View();
         }
 
-        // ── Login (POST) ──────────────────────────────────────────────────────────
         [HttpPost]
         public IActionResult Login(string email, string password)
         {
@@ -108,8 +101,7 @@ namespace BookStoreApp.Controllers
                 return View();
             }
 
-            var user = _db.Users.FirstOrDefault(
-                u => u.Email == email.Trim().ToLower() && u.Password == password);
+            var user = _db.Users.FirstOrDefault(u => u.Email == email.Trim().ToLower() && u.Password == password);
 
             if (user == null)
             {
@@ -118,12 +110,10 @@ namespace BookStoreApp.Controllers
             }
 
             SetSession(user);
-
             TempData["Success"] = $"Welcome back, {user.Name}!";
             return RedirectToAction("Index", "Books");
         }
 
-        // ── Logout ────────────────────────────────────────────────────────────────
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
@@ -131,14 +121,14 @@ namespace BookStoreApp.Controllers
             return RedirectToAction("Login");
         }
 
-        // ── Profile (GET) ─────────────────────────────────────────────────────────
         public IActionResult Profile()
         {
             if (!IsLoggedIn()) return RedirectToAction("Login");
 
-            var userId = HttpContext.Session.GetInt32("UserId")!.Value;
-            var user = _db.Users.Find(userId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
 
+            var user = _db.Users.Find(userId.Value);
             if (user == null)
             {
                 HttpContext.Session.Clear();
@@ -148,21 +138,20 @@ namespace BookStoreApp.Controllers
             return View(user);
         }
 
-        // ── Edit Profile (GET) ────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Edit()
         {
             if (!IsLoggedIn()) return RedirectToAction("Login");
 
-            var userId = HttpContext.Session.GetInt32("UserId")!.Value;
-            var user = _db.Users.Find(userId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
 
+            var user = _db.Users.Find(userId.Value);
             if (user == null) return RedirectToAction("Login");
 
             return View(user);
         }
 
-        // ── Edit Profile (POST) ───────────────────────────────────────────────────
         [HttpPost]
         public async Task<IActionResult> Edit(string name, string email, string? newPassword, IFormFile? profileImage)
         {
@@ -172,23 +161,19 @@ namespace BookStoreApp.Controllers
             var user = await _db.Users.FindAsync(userId);
             if (user == null) return RedirectToAction("Login");
 
-            // Validate name & email
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
             {
                 ViewBag.Error = "Name and email cannot be empty.";
                 return View(user);
             }
 
-            // Check email not taken by someone else
-            bool emailTaken = _db.Users.Any(u => u.Email == email.Trim().ToLower()
-                                              && u.Id != userId);
+            bool emailTaken = _db.Users.Any(u => u.Email == email.Trim().ToLower() && u.Id != userId);
             if (emailTaken)
             {
                 ViewBag.Error = "That email is already used by another account.";
                 return View(user);
             }
 
-            // Handle new profile image
             if (profileImage != null && profileImage.Length > 0)
             {
                 var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
@@ -199,7 +184,6 @@ namespace BookStoreApp.Controllers
                     return View(user);
                 }
 
-                // Delete old image if it exists
                 if (!string.IsNullOrEmpty(user.ProfileImage))
                 {
                     var oldPath = Path.Combine(_env.WebRootPath, "images", user.ProfileImage);
@@ -214,19 +198,58 @@ namespace BookStoreApp.Controllers
                 user.ProfileImage = fileName;
             }
 
-            // Apply changes
             user.Name = name.Trim();
             user.Email = email.Trim().ToLower();
 
             if (!string.IsNullOrWhiteSpace(newPassword))
-                user.Password = newPassword;   // TODO: hash in production
+                user.Password = newPassword;
 
             await _db.SaveChangesAsync();
-
-            // Refresh session name
             HttpContext.Session.SetString("UserName", user.Name);
 
             TempData["Success"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+
+        // ✅ NEW: Reload Wallet - Show Page (GET)
+        [HttpGet]
+        public IActionResult ReloadWallet()
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login");
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = _db.Users.Find(userId.Value);
+            if (user == null) return RedirectToAction("Login");
+
+            ViewBag.CurrentBalance = user.WalletBalance ?? 0m;
+            return View();
+        }
+
+        // ✅ NEW: Reload Wallet - Process Payment (POST)
+        [HttpPost]
+        public IActionResult ReloadWallet(decimal amount)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login");
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = _db.Users.Find(userId.Value);
+            if (user == null) return RedirectToAction("Login");
+
+            if (amount <= 0)
+            {
+                ViewBag.Error = "Please enter a valid amount greater than 0.";
+                ViewBag.CurrentBalance = user.WalletBalance ?? 0m;
+                return View();
+            }
+
+            user.WalletBalance = (user.WalletBalance ?? 0m) + amount;
+            _db.SaveChanges();
+
+            TempData["Success"] = $"₱{amount:N2} added to your wallet successfully!";
             return RedirectToAction("Profile");
         }
     }

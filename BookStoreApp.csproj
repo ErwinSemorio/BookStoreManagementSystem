@@ -13,6 +13,7 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="Views\Admin\NewFolder\" />
     <Folder Include="Views\NewFolder2\" />
     <Folder Include="Views\NewFolder3\" />

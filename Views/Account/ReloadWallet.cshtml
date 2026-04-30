@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Reload Wallet";
+    decimal currentBalance = ViewBag.CurrentBalance ?? 0m;
+}
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="col-md-6 col-lg-5">
+        <a href="/Account/Profile" class="btn btn-sm btn-link text-white-50 text-decoration-none mb-3 ps-0">
+            <i class="bi bi-arrow-left me-1"></i> Back to Profile
+        </a>
+
+        <div class="card-glass p-4 text-center">
+            <h3 class="fw-bold mb-4">💳 Reload Wallet</h3>
+            
+            <div class="p-3 rounded-3 mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                <small class="text-white-50 text-uppercase fw-bold">Current Balance</small>
+                <div class="fs-3 fw-bold text-success mt-1">@currentBalance.ToString("N2")</div>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger bg-danger bg-opacity-25 border-0 text-danger small py-2 mb-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
+                </div>
+            }
+
+            <form method="post" action="/Account/ReloadWallet">
+                <div class="mb-4">
+                    <label class="form-label small text-white-50 fw-bold text-start">AMOUNT TO ADD</label>
+                    <!-- Fixed: Removed bg-light so text is visible on dark theme -->
+                    <input type="number" name="amount" step="0.01" min="1" class="form-control py-3 text-center fs-5" placeholder="0.00" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom w-100 py-3">
+                    <i class="bi bi-plus-circle me-2"></i>Add Funds
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
