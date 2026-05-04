@@ -3,68 +3,100 @@
     ViewData["Title"] = "Confirm Purchase";
     var user = ViewBag.User as BookStoreApp.Models.Users;
     int qty = ViewBag.Quantity as int? ?? 1;
-    
     decimal total = Model.Price * qty;
     decimal wallet = user?.WalletBalance ?? 0m;
     decimal remaining = wallet - total;
     bool canAfford = wallet >= total;
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-    <div class="card shadow-lg" style="width: 100%; max-width: 500px; border: 1px solid var(--border-color);">
+<div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div class="glass-card shadow-lg" style="width: 100%; max-width: 520px;">
         <div class="card-body p-5">
-            <div class="text-center mb-4">
-                <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
-                <h3 class="text-white mb-1">Confirm Purchase</h3>
-                <p class="text-secondary small">Please review the transaction details below.</p>
+            <!-- Header -->
+            <div class="text-center mb-5 fade-in-up">
+                <div class="mb-4">
+                    <i class="bi bi-credit-card-2-front display-3 text-success"></i>
+                </div>
+                <h2 class="fw-bold mb-2 text-white">Confirm Purchase</h2>
+                <p class="text-secondary lead mb-0">Review your order details</p>
             </div>
 
-            <!-- Book Info -->
-            <div class="bg-dark bg-opacity-50 rounded p-3 mb-4 d-flex align-items-center border border-secondary border-opacity-25">
-                <img src="/images/books/@(Model.CoverImage ?? "default.jpg")" class="rounded me-3" style="width: 60px; height: 80px; object-fit: cover;" />
-                <div>
-                    <h5 class="text-white mb-1">@Model.Title</h5>
-                    <p class="text-secondary small mb-0">@Model.Author</p>
+            <!-- Book Preview -->
+            <div class="glass-card p-4 mb-5 fade-in-up" data-hover>
+                <div class="row align-items-center">
+                    <div class="col-3">
+                        <div class="bg-glass rounded-3 p-3 d-flex align-items-center justify-content-center" style="height: 100px;">
+                            @if (!string.IsNullOrEmpty(Model.CoverImage))
+                            {
+                                <img src="/images/books/@Model.CoverImage" class="w-100 h-100 rounded-2" style="object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <i class="bi bi-book fs-1 opacity-50"></i>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-9 ps-4">
+                        <h5 class="fw-bold mb-2">@Model.Title</h5>
+                        <p class="text-secondary mb-2">@Model.Author</p>
+                        <span class="badge bg-success bg-opacity-20 text-success px-3 py-2">Qty: @qty</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Financials -->
-            <div class="mb-4">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-secondary small">Current Balance</span>
-                    <span class="text-white fw-bold">₱@wallet.ToString("N2")</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-secondary small">Transaction Total</span>
-                    <span class="text-danger-custom fw-bold">-₱@total.ToString("N2")</span>
-                </div>
-                <hr class="border-secondary border-opacity-25">
-                <div class="d-flex justify-content-between pt-2">
-                    <span class="text-white fw-bold">Remaining Balance</span>
-                    <span class="fw-bold @(canAfford ? "text-success" : "text-danger-custom")">@remaining.ToString("N2")</span>
+            <!-- Financial Breakdown -->
+            <div class="glass-card p-4 mb-5 fade-in-up" data-hover>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <small class="text-secondary d-block mb-1">Current Balance</small>
+                        <h4 class="text-white fw-bold mb-0">₱@wallet.ToString("N2")</h4>
+                    </div>
+                    <div class="col-6 text-end">
+                        <small class="text-secondary d-block mb-1">Order Total</small>
+                        <h4 class="text-danger fw-bold mb-0">₱@total.ToString("N2")</h4>
+                    </div>
+                    <div class="col-12">
+                        <hr class="border-secondary border-opacity-25 my-3">
+                    </div>
+                    <div class="col-6">
+                        <small class="text-secondary d-block mb-1">New Balance</small>
+                        <h3 class="fw-bold @(canAfford ? "text-success" : "text-danger") mb-0">@remaining.ToString("N2")</h3>
+                    </div>
                 </div>
             </div>
 
             @if (!canAfford)
             {
-                <div class="alert alert-danger bg-danger bg-opacity-10 border-0 text-danger small mb-4">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Insufficient balance.
+                <div class="alert alert-danger glass-card border-0 mb-4 fade-in-up">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Insufficient Balance</strong><br>
+                    <small>You need ₱@(total - wallet).ToString("N2") more to complete this purchase.</small>
                 </div>
             }
 
-            <form asp-action="PlaceOrder" method="post">
-                <input type="hidden" name="bookId" value="@Model.Id" />
-                <input type="hidden" name="quantity" value="@qty" />
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary-custom" @(canAfford ? "" : "disabled")>
-                        <i class="bi bi-check-circle me-2"></i>Confirm Purchase
+            <!-- Action Buttons -->
+            <div class="d-grid gap-3 fade-in-up">
+                <form asp-action="PlaceOrder" method="post">
+                    <input type="hidden" name="bookId" value="@Model.Id" />
+                    <input type="hidden" name="quantity" value="@qty" />
+                    <button type="submit" class="btn @(canAfford ? "btn-premium" : "btn-glass") @(canAfford ? "" : "opacity-50")" @(canAfford ? "" : "disabled")>
+                        @if (canAfford)
+                        {
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span>Confirm & Purchase</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-wallet2 me-2"></i>
+                            <span>Top Up Wallet</span>
+                        }
                     </button>
-                    <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-custom text-decoration-none">
-                        Cancel
-                    </a>
-                </div>
-            </form>
+                </form>
+                <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.Id"
+                       class="btn btn-glass text-decoration-none">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Book
+                </a>
+            </div>
         </div>
     </div>
 </div>

@@ -2,54 +2,162 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
-    <div class="col-md-6 col-lg-5">
-        <div class="card bg-dark text-white p-5 shadow-lg border-0" style="border-radius: 40px; background-color: rgba(30, 30, 50, 0.9) !important;">
-            
-            <div class="text-center mb-4 d-flex flex-column align-items-center">
-                @* Large transparent logo for professional branding *@
-                <img src="/images/books/logo.png"
-                     height="250"
-                     class="mb-3"
-                     alt="BookStore Hero"
-                     asp-append-version="true"
-                     style="object-fit: contain; width: auto;">
-                
-                <h2 class="fw-bold" style="font-family:'Playfair Display', serif;">Welcome Back</h2>
-                <p class="text-white-50 small">Sign in to continue to BookStore</p>
-            </div>
+<div class="login-wrapper">
+    <div class="login-card fade-in-up">
 
-            @if (ViewBag.Error != null)
-            {
-                <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger small">
-                    <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
-                </div>
-            }
-
-            <form method="post" action="/Account/Login">
-                <div class="mb-4">
-                    <label class="form-label small text-white-50 fw-bold">EMAIL ADDRESS</label>
-                    <input type="email" name="email" class="form-control bg-light text-dark py-3 border-0 shadow-none"
-                           placeholder="you@example.com" style="border-radius: 10px;" required />
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label small text-white-50 fw-bold">PASSWORD</label>
-                    <input type="password" name="password" class="form-control bg-light text-dark py-3 border-0 shadow-none"
-                           placeholder="••••••••" style="border-radius: 10px;" required />
-                </div>
-
-                <button type="submit" class="btn btn-danger w-100 py-3 fw-bold shadow-sm" style="background-color: #e94560; border-radius: 10px; border: none;">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
-                </button>
-            </form>
-
-            <div class="text-center mt-4">
-                <span class="text-white-50 small">New to BookStore?</span>
-                <a href="/Account/Register" class="ms-1 fw-bold text-decoration-none" style="color: #e94560">
-                    Create Account
-                </a>
-            </div>
+        <!-- LOGO - matches navbar exactly -->
+        <div class="text-center mb-4">
+            <a asp-controller="Books" asp-action="Index" class="login-logo">
+                📚 Book<span>Store</span>
+            </a>
+            <p class="text-secondary mt-2 mb-0" style="font-size:0.95rem;">
+                Sign in to continue reading
+            </p>
         </div>
+
+        <!-- DIVIDER -->
+        <div class="login-divider mb-4"></div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger bs-alert mb-4" style="border-radius:16px; padding: 0.9rem 1.2rem; font-size:0.9rem;">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>@ViewBag.Error
+            </div>
+        }
+
+        <form method="post" action="/Account/Login">
+
+            <!-- EMAIL -->
+            <div class="mb-4">
+                <label class="login-label">
+                    <i class="bi bi-envelope me-1"></i>Email Address
+                </label>
+                <input type="email" name="email"
+                       class="form-control login-input"
+                       placeholder="you@example.com" required />
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="mb-4 position-relative">
+                <label class="login-label">
+                    <i class="bi bi-lock me-1"></i>Password
+                </label>
+                <input type="password" name="password" id="loginPassword"
+                       class="form-control login-input pe-5"
+                       placeholder="••••••••" required />
+                <button type="button"
+                        onclick="togglePass()"
+                        style="position:absolute;right:14px;bottom:14px;background:none;border:none;padding:0;cursor:pointer;">
+                    <i id="eyeIcon" class="bi bi-eye text-secondary"></i>
+                </button>
+            </div>
+
+            <!-- SUBMIT -->
+            <button type="submit" class="btn btn-premium w-100 py-3 fw-bold mt-2">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+
+        </form>
+
+        <!-- REGISTER LINK -->
+        <div class="text-center mt-4">
+            <span class="text-secondary" style="font-size:0.9rem;">New to BookStore?</span>
+            <a asp-controller="Account" asp-action="Register"
+                   class="ms-1 fw-bold text-decoration-none"
+                   style="color: var(--accent); font-size:0.9rem;">
+                Create Account
+            </a>
+        </div>
+
     </div>
 </div>
+
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 460px;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 32px;
+        padding: 3rem 2.5rem;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+
+    /* Logo — same style as navbar */
+    .login-logo {
+        font-family: 'Playfair Display', serif;
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ffffff, #e94560);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+    }
+
+        .login-logo span {
+            /* inherited from gradient — no extra style needed */
+        }
+
+    .login-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 2px;
+    }
+
+    .login-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .login-input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 14px !important;
+        color: #ffffff !important;
+        padding: 14px 18px !important;
+        font-size: 0.95rem;
+        transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+
+        .login-input::placeholder {
+            color: rgba(255,255,255,0.2) !important;
+        }
+
+        .login-input:focus {
+            background: rgba(255,255,255,0.09) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 4px rgba(233,69,96,0.2) !important;
+            transform: scale(1.01);
+            outline: none !important;
+        }
+</style>
+
+<script>
+    function togglePass() {
+        const field = document.getElementById('loginPassword');
+        const icon  = document.getElementById('eyeIcon');
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+</script>

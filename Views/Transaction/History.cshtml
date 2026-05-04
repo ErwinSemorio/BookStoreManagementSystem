@@ -1,57 +1,66 @@
 ﻿@model IEnumerable<BookStoreApp.Models.Transaction>
 @{
-    ViewData["Title"] = "History";
+    ViewData["Title"] = "Transaction History";
     var user = ViewBag.User as BookStoreApp.Models.Users;
 }
 
 <div class="container py-5">
-    <!-- 1. Header Stats -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-5">
-            <div class="wallet-card h-100 d-flex flex-column justify-content-center">
-                <small class="text-white text-opacity-75 text-uppercase fw-bold">Available Balance</small>
-                <h2 class="text-white fw-bold my-2">₱@(user?.WalletBalance?.ToString("N2") ?? "0.00")</h2>
-                <div class="d-flex gap-2 mt-3">
-                    <a href="/Account/ReloadWallet" class="btn btn-light btn-sm fw-bold text-primary"><i class="bi bi-plus-circle me-1"></i>Deposit</a>
-                    <button class="btn btn-outline-light btn-sm border-0">Withdraw</button>
+    <!-- DASHBOARD STATS -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-5">
+            <div class="wallet-card glass-card h-100 p-5 position-relative overflow-hidden fade-in-up">
+                <div class="position-relative z-1">
+                    <small class="text-white text-opacity-75 text-uppercase fw-bold d-block mb-2">Available Balance</small>
+                    <h1 class="text-white fw-bold mb-4 lh-1">₱@(user?.WalletBalance?.ToString("N2") ?? "0.00")</h1>
+                    <div class="d-flex gap-2">
+                        <a href="/Account/ReloadWallet" class="btn btn-light rounded-pill px-4 py-2 fw-bold">
+                            <i class="bi bi-plus-circle me-2"></i>Add Funds
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 p-4 d-flex align-items-center justify-content-center">
-                <div class="text-center">
-                    <i class="bi bi-receipt text-primary display-6 mb-2"></i>
-                    <h4 class="text-white mb-0">142 Items</h4>
-                    <small class="text-secondary">Total Transactions</small>
-                </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card h-100 p-5 text-center fade-in-up" data-hover>
+                <i class="bi bi-receipt display-4 text-accent mb-3 opacity-75"></i>
+                <h3 class="fw-bold text-white mb-1">@Model.Count()</h3>
+                <small class="text-secondary fw-semibold">Total Purchases</small>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card h-100 p-4 d-flex align-items-center justify-content-center">
-                <div class="text-center">
-                    <i class="bi bi-box-seam text-warning display-6 mb-2"></i>
-                    <h4 class="text-white mb-0">3 Orders</h4>
-                    <small class="text-secondary">Pending Verification</small>
-                </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="glass-card h-100 p-5 text-center fade-in-up" data-hover>
+                <i class="bi bi-clock-history display-4 text-warning mb-3 opacity-75"></i>
+                <h3 class="fw-bold text-white mb-1">@Model.Count(t => t.Status != "Completed")</h3>
+                <small class="text-secondary fw-semibold">Processing</small>
             </div>
         </div>
     </div>
 
-    <!-- 2. Table -->
-    <div class="card overflow-hidden">
-        <div class="p-4 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
-            <h5 class="text-white mb-0">Transaction History</h5>
-            <div class="btn-group">
-                <button class="btn btn-sm btn-outline-custom"><i class="bi bi-filter"></i> Filter</button>
-                <button class="btn btn-sm btn-outline-custom"><i class="bi bi-download"></i> Export</button>
+    <!-- TRANSACTIONS TABLE -->
+    <div class="glass-card overflow-hidden fade-in-up">
+        <div class="p-5 border-bottom" style="border-color: var(--glass-border);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="fw-bold mb-1 text-white">Transaction History</h2>
+                    <p class="text-secondary mb-0">All your book purchases</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-glass px-4">
+                        <i class="bi bi-funnel me-2"></i>Filter
+                    </button>
+                    <button class="btn btn-glass px-4">
+                        <i class="bi bi-download me-2"></i>Export
+                    </button>
+                </div>
             </div>
         </div>
+        
         <div class="table-responsive">
-            <table class="table table-dark table-hover mb-0">
+            <table class="table table-dark mb-0">
                 <thead>
                     <tr>
-                        <th>Book Name</th>
-                        <th>Date Purchased</th>
+                        <th>Book</th>
+                        <th>Date</th>
                         <th>Status</th>
                         <th class="text-end">Amount</th>
                     </tr>
@@ -59,34 +68,55 @@
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="4" class="text-center py-5 text-secondary">No transactions found.</td></tr>
+                        <tr>
+                            <td colspan="4" class="text-center py-8">
+                                <i class="bi bi-receipt-cutoff display-3 text-secondary mb-4"></i>
+                                <h4 class="text-white mb-2">No transactions yet</h4>
+                                <p class="text-secondary lead mb-4">Your purchase history will appear here</p>
+                                <a asp-controller="Books" asp-action="Index" class="btn btn-premium px-5">Browse Books</a>
+                            </td>
+                        </tr>
                     }
                     else
                     {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
-                            <tr>
+                            <tr class="table-row-hover">
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="/images/books/@(item.Book?.CoverImage ?? "default.jpg")" class="rounded me-3" style="width: 40px; height: 50px; object-fit: cover;" />
+                                        <div class="bg-glass rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 60px;">
+                                            @if (!string.IsNullOrEmpty(item.Book?.CoverImage))
+                                            {
+                                                <img src="/images/books/@item.Book.CoverImage" class="w-100 h-100 rounded-2" style="object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-book fs-6 opacity-50"></i>
+                                            }
+                                        </div>
                                         <div>
-                                            <div class="text-white fw-bold small">@item.Book?.Title</div>
+                                            <div class="fw-bold text-white small">@item.Book?.Title</div>
                                             <small class="text-secondary">@item.Book?.Author</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-secondary">@item.TransactionDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div>@item.TransactionDate.ToString("MMM dd")</div>
+                                    <small class="text-secondary">@item.TransactionDate.ToString("HH:mm")</small>
+                                </td>
                                 <td>
                                     @if (item.Status == "Completed")
                                     {
-                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">COMPLETED</span>
+                                        <span class="badge bg-success px-3 py-2 fw-bold fs-6">✓ Completed</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">PROCESSING</span>
+                                        <span class="badge bg-warning px-3 py-2 fw-bold fs-6 animate__pulse animate__infinite">⏳ Processing</span>
                                     }
                                 </td>
-                                <td class="text-end fw-bold text-white">-₱@item.TotalAmount.ToString("N2")</td>
+                                <td class="text-end">
+                                    <div class="fw-bold h5 text-danger mb-0">-₱@item.TotalAmount.ToString("N2")</div>
+                                </td>
                             </tr>
                         }
                     }
@@ -95,3 +125,10 @@
         </div>
     </div>
 </div>
+
+<style>
+    .table-row-hover:hover {
+        background: rgba(233,69,96,0.1) !important;
+        transform: scale(1.01);
+    }
+</style>

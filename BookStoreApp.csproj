@@ -18,6 +18,7 @@
     <Folder Include="Views\NewFolder2\" />
     <Folder Include="Views\NewFolder3\" />
     <Folder Include="Views\NewFolder4\" />
+    <Folder Include="wwwroot\images\users\" />
   </ItemGroup>
 
 </Project>

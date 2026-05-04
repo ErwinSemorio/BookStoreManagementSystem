@@ -4,54 +4,316 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BookStore</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark fixed-top px-4" style="background: rgba(15, 12, 41, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index" style="font-family: 'Playfair Display', serif;">
-                    <span style="color: var(--accent-crimson)">SD1</span> Books
-                </a>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto align-items-center">
-                        <li class="nav-item px-2"><a class="nav-link" asp-controller="Home" asp-action="Index">Collection</a></li>
-                        <li class="nav-item px-2"><a class="nav-link" asp-controller="Transaction" asp-action="History">History</a></li>
-                        <li class="nav-item px-2">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Account" asp-action="Profile">
-                                <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px; font-size:14px;">J</div>
-                                <span>Profile</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
 
-    <main role="main" class="container" style="padding-top: 100px;">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.08);
+            --accent: #e94560;
+            --accent-glow: rgba(233,69,96,0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b3b8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        .bs-navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 75px;
+            background: rgba(10,10,15,0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+            transition: height 0.3s ease, backdrop-filter 0.3s ease;
+        }
+
+        .bs-navbar.scrolled {
+            height: 62px;
+            backdrop-filter: blur(30px) saturate(200%);
+        }
+
+        .bs-navbar-inner {
+            max-width: 1400px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2.5rem;
+            height: 100%;
+        }
+
+        /* Logo */
+        .bs-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 30px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #e94560);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .bs-logo:hover {
+            transform: scale(1.06);
+            opacity: 0.9;
+        }
+
+        /* Nav links */
+        .bs-nav-links a {
+            color: var(--text-secondary);
+            margin: 0 0.6rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            padding-bottom: 4px;
+        }
+
+        .bs-nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .bs-nav-links a:hover { color: var(--text-primary); }
+        .bs-nav-links a:hover::after { width: 100%; }
+
+        /* User area */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .wallet-balance {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid var(--glass-border);
+            padding: 0.45rem 1.1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--text-primary);
+        }
+
+        .wallet-balance i {
+            color: #10b981;
+            margin-right: 5px;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e94560, #ff6b9d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.12) rotate(5deg);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        /* Auth buttons */
+        .btn-glass {
+            background: var(--bg-glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            border-radius: 25px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: background 0.3s, border-color 0.3s, transform 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-glass:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, var(--accent), #ff6b9d);
+            border: none;
+            border-radius: 25px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: white;
+            transition: opacity 0.3s, transform 0.2s, box-shadow 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-premium:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+            color: white;
+        }
+
+        /* Main & alerts */
+        .bs-main {
+            padding: 105px 2rem 4rem;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .bs-alert {
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px !important;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            animation: slideDown 0.35s ease;
+        }
+
+        @@keyframes slideDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @@keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @@media (max-width: 768px) {
+            .bs-navbar-inner { padding: 0 1.2rem; }
+            .bs-main { padding: 95px 1rem 2rem; }
+            .user-info { gap: 0.6rem; }
+            .wallet-balance { font-size: 0.82rem; padding: 0.4rem 0.8rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="bs-navbar" id="navbar">
+        <div class="bs-navbar-inner">
+
+            <a class="bs-logo" asp-controller="Books" asp-action="Index">
+                📚 Book<span style="-webkit-text-fill-color: inherit;">Store</span>
+            </a>
+
+            @{
+                var userName = Context.Session.GetString("UserName");
+                var userId   = Context.Session.GetInt32("UserId");
+                var wallet   = Context.Session.GetString("WalletBalance") ?? "0.00";
+                var initial  = string.IsNullOrEmpty(userName) ? "U" : userName[0].ToString().ToUpper();
+            }
+
+            @if (userId != null)
+            {
+                <div class="bs-nav-links">
+                    <a asp-controller="Books"       asp-action="Index">Home</a>
+                    <a asp-controller="Transaction" asp-action="History">History</a>
+                    <a asp-controller="Account"     asp-action="Profile">Profile</a>
+                </div>
+
+                <div class="user-info">
+                    <span class="wallet-balance">
+                        <i class="bi bi-wallet2"></i>₱@wallet
+                    </span>
+                    <div class="user-avatar">@initial</div>
+                    <a asp-controller="Account" asp-action="Logout"
+                       class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"
+                       style="font-size:0.85rem;">
+                        Logout
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex gap-2">
+                    <a asp-controller="Account" asp-action="Login"    class="btn-glass">Login</a>
+                    <a asp-controller="Account" asp-action="Register" class="btn-premium">Register</a>
+                </div>
+            }
+
+        </div>
+    </nav>
+
+    <main class="bs-main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success bs-alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger bs-alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            </div>
+        }
+
         @RenderBody()
     </main>
 
+    <footer class="text-center py-4 mt-5"
+            style="border-top:1px solid var(--glass-border); color:var(--text-secondary); font-size:0.88rem;">
+        &copy; @DateTime.Now.Year BookStore &mdash; Crafted with ❤️ for readers worldwide
+    </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-            $(document).ready(function() {
-                $('main').addClass('animate__animated animate__fadeIn');
-            
-                $('a').not('[target="_blank"]').click(function(e) {
-                    if(this.host === window.location.host && !this.href.includes('#')) {
-                        e.preventDefault();
-                        let url = this.href;
-                        $('main').removeClass('animate__fadeIn').addClass('animate__fadeOut');
-                        setTimeout(() => window.location.href = url, 300);
-                    }
-                });
-            });
+    $(function () {
+        // Navbar shrink on scroll
+        $(window).scroll(function () {
+            $('#navbar').toggleClass('scrolled', $(this).scrollTop() > 50);
+        });
+
+        // Page fade in
+        $('main').addClass('animate__animated animate__fadeIn');
+
+        // Auto hide alerts
+        setTimeout(function () {
+            $('.bs-alert').fadeOut(500);
+        }, 4500);
+
+        // Hover pulse on data-hover elements
+        $('[data-hover]').hover(
+            function () { $(this).addClass('animate__animated animate__pulse animate__faster'); },
+            function () { $(this).removeClass('animate__animated animate__pulse animate__faster'); }
+        );
+    });
     </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

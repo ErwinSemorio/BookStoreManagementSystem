@@ -158,7 +158,6 @@ C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net1
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\scopedcss\bundle\BookStoreApp.styles.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\scopedcss\projectbundle\BookStoreApp.bundle.scp.css
-C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\compressed\2biinyrkky-{0}-09grig3des-09grig3des.gz
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\compressed\edcfwhvor9-{0}-61n19gt1b8-61n19gt1b8.gz
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\compressed\ws6fp245as-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\compressed\igbo6v4fo8-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -234,3 +233,4 @@ C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net1
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\BookStoreApp.pdb
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\BookStoreApp.genruntimeconfig.cache
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\ref\BookStoreApp.dll
+C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\obj\Debug\net10.0\compressed\2biinyrkky-{0}-c3gvplbl15-c3gvplbl15.gz

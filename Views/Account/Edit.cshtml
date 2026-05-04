@@ -3,236 +3,243 @@
     ViewData["Title"] = "Edit Profile";
 }
 
-<style>
-    :root {
-        --bg-body: #0d1117;
-        --bg-card: #161b22;
-        --bg-input: #0d1117;
-        --border-color: #30363d;
-        --text-primary: #ffffff;
-        --text-secondary: #8b949e;
-        --accent-blue: #2f81f7;
-        --accent-green: #238636;
-    }
-
-    body {
-        background-color: var(--bg-body);
-        color: var(--text-primary);
-        font-family: 'Inter', -apple-system, sans-serif;
-    }
-
-    /* Card Styles */
-    .edit-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    /* Avatar Section */
-    .avatar-section {
-        background: rgba(255,255,255,0.02);
-        border-right: 1px solid var(--border-color);
-        padding: 2rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .avatar-circle {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid var(--border-color);
-        margin-bottom: 1rem;
-        background: var(--bg-input);
-    }
-
-    .avatar-btn {
-        background: transparent;
-        border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-        border-radius: 6px;
-        padding: 0.4rem 1rem;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-        .avatar-btn:hover {
-            border-color: var(--text-secondary);
-            color: var(--text-primary);
-        }
-
-    /* Form Section */
-    .form-section {
-        padding: 2.5rem;
-    }
-
-    .section-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .form-label {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.4rem;
-    }
-
-    .form-control {
-        background: var(--bg-input);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary) !important;
-        border-radius: 6px;
-        padding: 0.6rem 0.8rem;
-        font-size: 0.9rem;
-    }
-
-        .form-control:focus {
-            background: var(--bg-input);
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.2);
-        }
-
-    /* Buttons */
-    .btn-save {
-        background: var(--accent-blue);
-        color: white !important;
-        border: none;
-        border-radius: 6px;
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-    }
-
-        .btn-save:hover {
-            background: #58a6ff;
-        }
-
-    .btn-cancel {
-        background: transparent;
-        color: var(--text-secondary) !important;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 0.6rem 1.5rem;
-    }
-
-        .btn-cancel:hover {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-primary) !important;
-        }
-    
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .avatar-section {
-            border-right: none;
-            border-bottom: 1px solid var(--border-color);
-        }
-    }
-</style>
-
 <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            
-            <div class="mb-4">
-                <h2 class="fw-bold text-white mb-1">Edit Profile</h2>
-                <p class="text-secondary small">Update your academic credentials and personal information.</p>
-            </div>
 
-            <form method="post" action="/Account/Edit" enctype="multipart/form-data">
-                <div class="edit-card">
-                    <div class="row g-0">
-                        
-                        <!-- Left: Avatar -->
-                        <div class="col-md-4">
-                            <div class="avatar-section">
-                                @if (!string.IsNullOrEmpty(Model.ProfileImage))
-                                {
-                                    <img id="avatarPreview" src="/images/@Model.ProfileImage" class="avatar-circle" />
-                                }
-                                else
-                                {
-                                    <div id="avatarFallback" class="avatar-circle d-flex align-items-center justify-content-center" style="font-size: 3rem; color: var(--accent-blue); font-weight: bold;">
-                                        @Model.Name[0]
-                                    </div>
-                                    <img id="avatarPreview" src="#" class="avatar-circle" style="display:none;" />
-                                }
-
-                                <label class="avatar-btn" for="profileInput">
-                                    <i class="bi bi-camera me-1"></i> Change Picture
-                                </label>
-                                <input type="file" name="profileImage" id="profileInput" class="d-none" accept="image/*" onchange="previewImage(this)" />
-                                <small class="text-secondary mt-2" style="font-size: 0.75rem;">PNG or JPG, max 5MB</small>
-                            </div>
-                        </div>
-
-                        <!-- Right: Form -->
-                        <div class="col-md-8">
-                            <div class="form-section">
-                                
-                                <!-- Personal Info -->
-                                <div class="mb-5">
-                                    <h5 class="section-title">Personal Information</h5>
-                                    <div class="mb-3">
-                                        <label class="form-label">Full Name</label>
-                                        <input type="text" name="name" value="@Model.Name" class="form-control" required />
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Email Address</label>
-                                        <input type="email" name="email" value="@Model.Email" class="form-control" required />
-                                    </div>
-                                </div>
-
-                                <!-- Security -->
-                                <div class="mb-4">
-                                    <h5 class="section-title">Security</h5>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">New Password</label>
-                                            <input type="password" name="newPassword" class="form-control" placeholder="••••••••" />
-                                            <small class="text-secondary" style="font-size: 0.75rem;">Leave blank to keep current password</small>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Confirm Password</label>
-                                            <input type="password" class="form-control" placeholder="••••••••" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="d-flex gap-3 justify-content-end mt-5">
-                                    <a href="/Account/Profile" class="btn btn-cancel text-decoration-none">Cancel</a>
-                                    <button type="submit" class="btn btn-save">Save Changes</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
+    <!-- PAGE HEADER -->
+    <div class="d-flex align-items-center gap-3 mb-5 fade-in-up">
+        <a href="/Account/Profile" class="btn btn-glass rounded-circle p-2">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <h1 class="fw-bold mb-0 text-white">Edit Profile</h1>
+            <p class="text-secondary mb-0">Update your personal information</p>
         </div>
     </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger bs-alert rounded-4 shadow-lg animate__animated animate__fadeInDown mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@ViewBag.Error
+        </div>
+    }
+
+    <form method="post" action="/Account/Edit" enctype="multipart/form-data">
+        <div class="row g-4">
+
+            <!-- LEFT COLUMN - Avatar Card -->
+            <div class="col-lg-4">
+                <div class="glass-card p-5 text-center fade-in-up h-100" data-hover>
+                    <h5 class="fw-bold text-white mb-4">Profile Picture</h5>
+
+                    <!-- Avatar Display -->
+                    <div class="position-relative d-inline-block mb-4">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImage))
+                        {
+                            <img id="avatarPreview"
+                                 src="/images/@Model.ProfileImage"
+                                 class="rounded-circle"
+                                 style="width:130px;height:130px;object-fit:cover;border:3px solid var(--accent);" />
+                        }
+                        else
+                        {
+                            <div id="avatarFallback"
+                                 class="rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                 style="width:130px;height:130px;background:linear-gradient(135deg,var(--accent),#ff6b9d);font-size:48px;font-weight:700;color:white;border:3px solid var(--accent);">
+                                @Model.Name[0].ToString().ToUpper()
+                            </div>
+                            <img id="avatarPreview" src="#"
+                                 class="rounded-circle"
+                                 style="display:none;width:130px;height:130px;object-fit:cover;border:3px solid var(--accent);" />
+                        }
+
+                        <!-- Camera overlay button -->
+                        <label for="profileInput"
+                               class="position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center"
+                               style="width:36px;height:36px;background:var(--accent);cursor:pointer;border:2px solid #0a0a0f;">
+                            <i class="bi bi-camera-fill text-white" style="font-size:14px;"></i>
+                        </label>
+                    </div>
+
+                    <input type="file" name="ProfileImage" id="profileInput"
+                           hidden accept="image/*"
+                           onchange="previewImage(this)" />
+
+                    <p class="text-secondary small mb-4">JPG, PNG, GIF or WebP — max 5MB</p>
+
+                    <label for="profileInput" class="btn btn-glass w-100">
+                        <i class="bi bi-upload me-2"></i>Choose Photo
+                    </label>
+
+                    <!-- User info summary -->
+                    <div class="mt-4 pt-4" style="border-top: 1px solid var(--glass-border);">
+                        <p class="text-white fw-bold mb-1">@Model.Name</p>
+                        <p class="text-secondary small mb-2">@Model.Email</p>
+                        <span class="badge px-3 py-2" style="background: var(--accent);">@Model.Role</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN - Form Fields -->
+            <div class="col-lg-8">
+                <div class="glass-card p-5 fade-in-up" style="animation-delay: 0.1s;">
+                    <h5 class="fw-bold text-white mb-4">
+                        <i class="bi bi-person-gear me-2 text-accent" style="color: var(--accent);"></i>
+                        Personal Information
+                    </h5>
+
+                    <!-- Name -->
+                    <div class="mb-4">
+                        <label class="text-secondary small fw-bold text-uppercase mb-2 d-block">
+                            <i class="bi bi-person me-1"></i>Full Name
+                        </label>
+                        <input type="text" name="name" value="@Model.Name"
+                               class="form-control" required
+                               placeholder="Enter your full name" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-4">
+                        <label class="text-secondary small fw-bold text-uppercase mb-2 d-block">
+                            <i class="bi bi-envelope me-1"></i>Email Address
+                        </label>
+                        <input type="email" name="email" value="@Model.Email"
+                               class="form-control" required
+                               placeholder="Enter your email" />
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="my-4 d-flex align-items-center gap-3">
+                        <div style="flex:1;height:1px;background:var(--glass-border);"></div>
+                        <span class="text-secondary small fw-bold text-uppercase">Change Password</span>
+                        <div style="flex:1;height:1px;background:var(--glass-border);"></div>
+                    </div>
+
+                    <p class="text-secondary small mb-4">Leave blank to keep your current password</p>
+
+                    <!-- New Password -->
+                    <div class="mb-4 position-relative">
+                        <label class="text-secondary small fw-bold text-uppercase mb-2 d-block">
+                            <i class="bi bi-lock me-1"></i>New Password
+                        </label>
+                        <input type="password" name="newPassword" id="newPassword"
+                               class="form-control pe-5"
+                               placeholder="Enter new password" />
+                        <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y pe-3"
+                                style="background:none;border:none;margin-top:14px;"
+                                onclick="togglePassword('newPassword', 'eyeNew')">
+                            <i id="eyeNew" class="bi bi-eye text-secondary"></i>
+                        </button>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-5 position-relative">
+                        <label class="text-secondary small fw-bold text-uppercase mb-2 d-block">
+                            <i class="bi bi-lock-fill me-1"></i>Confirm Password
+                        </label>
+                        <input type="password" name="confirmPassword" id="confirmPassword"
+                               class="form-control pe-5"
+                               placeholder="Confirm new password" />
+                        <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y pe-3"
+                                style="background:none;border:none;margin-top:14px;"
+                                onclick="togglePassword('confirmPassword', 'eyeConfirm')">
+                            <i id="eyeConfirm" class="bi bi-eye text-secondary"></i>
+                        </button>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-premium px-5 py-3 flex-grow-1">
+                            <i class="bi bi-check-circle me-2"></i>Save Changes
+                        </button>
+                        <a href="/Account/Profile" class="btn btn-glass px-4 py-3">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Danger Zone Card -->
+                <div class="glass-card p-4 mt-4 fade-in-up" style="animation-delay:0.2s; border-color: rgba(233,69,96,0.3);">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div>
+                            <h6 class="fw-bold text-white mb-1">
+                                <i class="bi bi-shield-exclamation me-2" style="color:var(--accent);"></i>
+                                Account Security
+                            </h6>
+                            <p class="text-secondary small mb-0">Your wallet balance: <strong class="text-white">₱@((Model.WalletBalance ?? 0m).ToString("N2"))</strong></p>
+                        </div>
+                        <a href="/Account/ReloadWallet" class="btn btn-glass px-4">
+                            <i class="bi bi-wallet2 me-2"></i>Reload Wallet
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
 </div>
 
+<style>
+    .text-accent { color: var(--accent) !important; }
+
+    .form-control::placeholder { color: rgba(255,255,255,0.2); }
+
+    .form-control:focus { outline: none; }
+
+    /* Password match indicator */
+    #confirmPassword.is-valid  { border-color: #10b981 !important; box-shadow: 0 0 0 4px rgba(16,185,129,0.2) !important; }
+    #confirmPassword.is-invalid { border-color: var(--accent) !important; box-shadow: 0 0 0 4px var(--accent-glow) !important; }
+</style>
+
 <script>
+    // Image preview
     function previewImage(input) {
         const preview = document.getElementById('avatarPreview');
         const fallback = document.getElementById('avatarFallback');
+
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File too large (max 5MB)");
+                input.value = "";
+                return;
+            }
+
             const reader = new FileReader();
-            reader.onload = e => {
+            reader.onload = function (e) {
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 if (fallback) fallback.style.display = 'none';
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         }
     }
+
+    // Toggle password visibility
+    function togglePassword(fieldId, iconId) {
+        const field = document.getElementById(fieldId);
+        const icon  = document.getElementById(iconId);
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+
+    // Live password match validation
+    document.getElementById('confirmPassword').addEventListener('input', function () {
+        const newPass  = document.getElementById('newPassword').value;
+        const confPass = this.value;
+        if (confPass === '') {
+            this.classList.remove('is-valid', 'is-invalid');
+        } else if (newPass === confPass) {
+            this.classList.add('is-valid');
+            this.classList.remove('is-invalid');
+        } else {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        }
+    });
 </script>

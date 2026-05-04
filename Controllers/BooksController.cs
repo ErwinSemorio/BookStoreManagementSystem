@@ -40,6 +40,7 @@ namespace BookStoreApp.Controllers
             _context.SaveChanges();
         }
 
+        // FIXED: Merged duplicate Index() methods into one
         public async Task<IActionResult> Index(string? searchString)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -47,14 +48,24 @@ namespace BookStoreApp.Controllers
 
             ViewData["CurrentFilter"] = searchString;
 
-            var books = from b in _context.Books select b;
+            var user = await _context.Users.FindAsync(userId);
+            var totalOrders = await _context.Transactions.CountAsync(t => t.UserId == userId);
+
+            var booksQuery = from b in _context.Books select b;
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                books = books.Where(b => b.Title.Contains(searchString) || b.Author.Contains(searchString));
+                booksQuery = booksQuery.Where(b => b.Title.Contains(searchString) || b.Author.Contains(searchString));
             }
 
-            return View(await books.ToListAsync());
+            var model = new DashboardViewModel
+            {
+                WalletBalance = user?.WalletBalance ?? 0,
+                TotalOrders = totalOrders,
+                Books = await booksQuery.ToListAsync()
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
