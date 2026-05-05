@@ -2,133 +2,357 @@
 @{
     ViewData["Title"] = "Transaction History";
     var user = ViewBag.User as BookStoreApp.Models.Users;
+    var totalSpent = (decimal)(ViewBag.TotalSpent ?? 0m);
+    var totalUnits = (int)(ViewBag.TotalUnits ?? 0);
+    var lastDate = (string)(ViewBag.LastDate ?? "—");
+    var list = Model.ToList();
 }
 
 <div class="container py-5">
-    <!-- DASHBOARD STATS -->
-    <div class="row g-4 mb-5">
-        <div class="col-lg-5">
-            <div class="wallet-card glass-card h-100 p-5 position-relative overflow-hidden fade-in-up">
-                <div class="position-relative z-1">
-                    <small class="text-white text-opacity-75 text-uppercase fw-bold d-block mb-2">Available Balance</small>
-                    <h1 class="text-white fw-bold mb-4 lh-1">₱@(user?.WalletBalance?.ToString("N2") ?? "0.00")</h1>
-                    <div class="d-flex gap-2">
-                        <a href="/Account/ReloadWallet" class="btn btn-light rounded-pill px-4 py-2 fw-bold">
-                            <i class="bi bi-plus-circle me-2"></i>Add Funds
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="glass-card h-100 p-5 text-center fade-in-up" data-hover>
-                <i class="bi bi-receipt display-4 text-accent mb-3 opacity-75"></i>
-                <h3 class="fw-bold text-white mb-1">@Model.Count()</h3>
-                <small class="text-secondary fw-semibold">Total Purchases</small>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-            <div class="glass-card h-100 p-5 text-center fade-in-up" data-hover>
-                <i class="bi bi-clock-history display-4 text-warning mb-3 opacity-75"></i>
-                <h3 class="fw-bold text-white mb-1">@Model.Count(t => t.Status != "Completed")</h3>
-                <small class="text-secondary fw-semibold">Processing</small>
-            </div>
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex align-items-center gap-3 mb-5 fade-in-up">
+        <div>
+            <h1 class="fw-bold mb-0 text-white">Transaction History</h1>
+            <p class="text-secondary mb-0">All your book purchases in one place</p>
         </div>
     </div>
 
-    <!-- TRANSACTIONS TABLE -->
-    <div class="glass-card overflow-hidden fade-in-up">
-        <div class="p-5 border-bottom" style="border-color: var(--glass-border);">
+    <!-- STATS ROW -->
+    <div class="row g-4 mb-5">
+
+        <!-- Wallet Balance -->
+        <div class="col-lg-4 col-md-6 fade-in-up" style="animation-delay:0.05s;">
+            <div class="wallet-card glass-card h-100 p-4 position-relative overflow-hidden">
+                <small class="text-white text-opacity-75 text-uppercase fw-bold d-block mb-2">
+                    <i class="bi bi-wallet2 me-1"></i>Wallet Balance
+                </small>
+                <h2 class="text-white fw-bold mb-3 lh-1">
+                    ₱@(user?.WalletBalance?.ToString("N2") ?? "0.00")
+                </h2>
+                <a href="/Account/ReloadWallet"
+                       class="btn btn-light rounded-pill px-4 py-2 fw-bold" style="font-size:0.85rem;">
+                    <i class="bi bi-plus-circle me-1"></i>Add Funds
+                </a>
+            </div>
+        </div>
+
+        <!-- Total Spent -->
+        <div class="col-lg-3 col-md-6 fade-in-up" style="animation-delay:0.1s;">
+            <div class="glass-card h-100 p-4 text-center" data-hover>
+                <i class="bi bi-cash-stack display-5 mb-3 opacity-75" style="color:#e94560;"></i>
+                <h3 class="fw-bold text-white mb-1">₱@totalSpent.ToString("N2")</h3>
+                <small class="text-secondary fw-semibold">Total Spent</small>
+            </div>
+        </div>
+
+        <!-- Total Purchases -->
+        <div class="col-lg-2 col-md-6 fade-in-up" style="animation-delay:0.15s;">
+            <div class="glass-card h-100 p-4 text-center" data-hover>
+                <i class="bi bi-receipt display-5 mb-3 opacity-75" style="color:#8b5cf6;"></i>
+                <h3 class="fw-bold text-white mb-1">@list.Count</h3>
+                <small class="text-secondary fw-semibold">Purchases</small>
+            </div>
+        </div>
+
+        <!-- Books Bought -->
+        <div class="col-lg-3 col-md-6 fade-in-up" style="animation-delay:0.2s;">
+            <div class="glass-card h-100 p-4 text-center" data-hover>
+                <i class="bi bi-book display-5 mb-3 opacity-75" style="color:#10b981;"></i>
+                <h3 class="fw-bold text-white mb-1">@totalUnits</h3>
+                <small class="text-secondary fw-semibold">Books Bought</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="glass-card overflow-hidden fade-in-up" style="animation-delay:0.25s;">
+
+        <!-- Table Header -->
+        <div class="p-4 p-lg-5" style="border-bottom:1px solid var(--glass-border);">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <h2 class="fw-bold mb-1 text-white">Transaction History</h2>
-                    <p class="text-secondary mb-0">All your book purchases</p>
+                    <h2 class="fw-bold mb-1 text-white">All Transactions</h2>
+                    <p class="text-secondary mb-0" style="font-size:0.9rem;">
+                        Last purchase: <strong class="text-white">@lastDate</strong>
+                    </p>
                 </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-glass px-4">
-                        <i class="bi bi-funnel me-2"></i>Filter
-                    </button>
-                    <button class="btn btn-glass px-4">
-                        <i class="bi bi-download me-2"></i>Export
-                    </button>
+                <div class="d-flex gap-2 flex-wrap">
+
+                    <!-- Filter dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-glass px-4 dropdown-toggle"
+                                data-bs-toggle="dropdown">
+                            <i class="bi bi-funnel me-2"></i>
+                            <span id="filterLabel">All</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark"
+                            style="background:rgba(20,20,35,0.98);border:1px solid var(--glass-border);border-radius:12px;">
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                       onclick="filterTable('all')">
+                                    All Transactions
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                       onclick="filterTable('Completed')">
+                                    ✓ Completed
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                       onclick="filterTable('Processing')">
+                                    ⏳ Processing
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Export CSV button -->
+                    <a href="/Transaction/ExportCsv"
+                           class="btn btn-premium px-4">
+                        <i class="bi bi-download me-2"></i>Export CSV
+                    </a>
+
                 </div>
             </div>
         </div>
-        
+
+        <!-- Search bar -->
+        <div class="px-4 px-lg-5 py-3" style="border-bottom:1px solid var(--glass-border);">
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute"
+                   style="left:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary);"></i>
+                <input type="text" id="searchInput"
+                       class="form-control login-input ps-5"
+                       placeholder="Search by book title or author..."
+                       oninput="searchTable(this.value)"
+                       style="border-radius:12px !important;" />
+            </div>
+        </div>
+
+        <!-- Table -->
         <div class="table-responsive">
-            <table class="table table-dark mb-0">
+            <table class="table table-dark mb-0" id="txTable">
                 <thead>
-                    <tr>
-                        <th>Book</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th class="text-end">Amount</th>
+                    <tr style="border-color:var(--glass-border);">
+                        <th class="ps-4 ps-lg-5 py-3" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);font-weight:600;">Book</th>
+                        <th class="py-3" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);font-weight:600;">Date</th>
+                        <th class="py-3" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);font-weight:600;">Qty</th>
+                        <th class="py-3" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);font-weight:600;">Status</th>
+                        <th class="text-end pe-4 pe-lg-5 py-3" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);font-weight:600;">Amount</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @if (!Model.Any())
+                <tbody id="txBody">
+                    @if (!list.Any())
                     {
                         <tr>
-                            <td colspan="4" class="text-center py-8">
-                                <i class="bi bi-receipt-cutoff display-3 text-secondary mb-4"></i>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="bi bi-receipt-cutoff display-3 text-secondary mb-4 d-block"></i>
                                 <h4 class="text-white mb-2">No transactions yet</h4>
-                                <p class="text-secondary lead mb-4">Your purchase history will appear here</p>
-                                <a asp-controller="Books" asp-action="Index" class="btn btn-premium px-5">Browse Books</a>
+                                <p class="text-secondary mb-4">Your purchase history will appear here</p>
+                                <a asp-controller="Books" asp-action="Index"
+                                   class="btn btn-premium px-5">Browse Books</a>
                             </td>
                         </tr>
                     }
                     else
                     {
-                        @foreach (var item in Model)
+                        @foreach (var item in list)
                         {
-                            <tr class="table-row-hover">
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-glass rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 60px;">
+                            <tr class="tx-row"
+                                data-status="@item.Status"
+                                data-title="@item.Book?.Title?.ToLower()"
+                                data-author="@item.Book?.Author?.ToLower()"
+                                style="border-color:var(--glass-border);transition:background 0.2s;">
+
+                                <!-- Book -->
+                                <td class="ps-4 ps-lg-5 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-3 overflow-hidden flex-shrink-0"
+                                             style="width:44px;height:54px;background:var(--bg-glass);">
                                             @if (!string.IsNullOrEmpty(item.Book?.CoverImage))
                                             {
-                                                <img src="/images/books/@item.Book.CoverImage" class="w-100 h-100 rounded-2" style="object-fit: cover;" />
+                                                <img src="/images/books/@item.Book.CoverImage"
+                                                     class="w-100 h-100"
+                                                     style="object-fit:cover;" />
                                             }
                                             else
                                             {
-                                                <i class="bi bi-book fs-6 opacity-50"></i>
+                                                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                                    <i class="bi bi-book text-secondary"></i>
+                                                </div>
                                             }
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-white small">@item.Book?.Title</div>
+                                            <div class="fw-bold text-white" style="font-size:0.9rem;">
+                                                @item.Book?.Title
+                                            </div>
                                             <small class="text-secondary">@item.Book?.Author</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <div>@item.TransactionDate.ToString("MMM dd")</div>
-                                    <small class="text-secondary">@item.TransactionDate.ToString("HH:mm")</small>
+
+                                <!-- Date -->
+                                <td class="py-3">
+                                    <div class="text-white" style="font-size:0.9rem;">
+                                        @item.TransactionDate.ToString("MMM dd, yyyy")
+                                    </div>
+                                    <small class="text-secondary">
+                                        @item.TransactionDate.ToString("hh:mm tt")
+                                    </small>
                                 </td>
-                                <td>
+
+                                <!-- Qty -->
+                                <td class="py-3">
+                                    <span class="badge px-3 py-2 fw-bold"
+                                          style="background:rgba(255,255,255,0.08);color:var(--text-primary);font-size:0.85rem;">
+                                        x@item.Quantity
+                                    </span>
+                                </td>
+
+                                <!-- Status -->
+                                <td class="py-3">
                                     @if (item.Status == "Completed")
                                     {
-                                        <span class="badge bg-success px-3 py-2 fw-bold fs-6">✓ Completed</span>
+                                        <span class="badge px-3 py-2 fw-semibold"
+                                              style="background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);font-size:0.82rem;">
+                                            <i class="bi bi-check-circle me-1"></i>Completed
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning px-3 py-2 fw-bold fs-6 animate__pulse animate__infinite">⏳ Processing</span>
+                                        <span class="badge px-3 py-2 fw-semibold"
+                                              style="background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);font-size:0.82rem;">
+                                            <i class="bi bi-clock me-1"></i>Processing
+                                        </span>
                                     }
                                 </td>
-                                <td class="text-end">
-                                    <div class="fw-bold h5 text-danger mb-0">-₱@item.TotalAmount.ToString("N2")</div>
+
+                                <!-- Amount -->
+                                <td class="text-end pe-4 pe-lg-5 py-3">
+                                    <div class="fw-bold"
+                                         style="color:#e94560;font-size:1rem;">
+                                        -₱@item.TotalAmount.ToString("N2")
+                                    </div>
                                 </td>
+
                             </tr>
                         }
                     }
                 </tbody>
             </table>
         </div>
+
+        <!-- No results message (hidden by default) -->
+        <div id="noResults" class="text-center py-5" style="display:none !important;">
+            <i class="bi bi-search display-4 text-secondary mb-3 d-block"></i>
+            <h5 class="text-white mb-1">No results found</h5>
+            <p class="text-secondary small">Try a different search term or filter</p>
+        </div>
+
+        <!-- Table Footer Summary -->
+        @if (list.Any())
+        {
+            <div class="px-4 px-lg-5 py-4 d-flex justify-content-between align-items-center flex-wrap gap-2"
+                 style="border-top:1px solid var(--glass-border);">
+                <small class="text-secondary">
+                    Showing <strong class="text-white" id="visibleCount">@list.Count</strong>
+                    of <strong class="text-white">@list.Count</strong> transactions
+                </small>
+                <small class="text-secondary">
+                    Total: <strong style="color:#e94560;">-₱@totalSpent.ToString("N2")</strong>
+                </small>
+            </div>
+        }
+
     </div>
 </div>
 
 <style>
-    .table-row-hover:hover {
-        background: rgba(233,69,96,0.1) !important;
-        transform: scale(1.01);
+    .tx-row:hover {
+        background: rgba(233,69,96,0.07) !important;
     }
+
+    .login-input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 14px !important;
+        color: #ffffff !important;
+        padding: 12px 18px !important;
+        font-size: 0.9rem;
+        transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+        .login-input::placeholder {
+            color: rgba(255,255,255,0.2) !important;
+        }
+
+        .login-input:focus {
+            background: rgba(255,255,255,0.09) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 4px rgba(233,69,96,0.2) !important;
+            outline: none !important;
+        }
+
+    .dropdown-item {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .dropdown-item:hover {
+            background: rgba(233,69,96,0.15);
+            color: white;
+        }
 </style>
+
+<script>
+    // Filter by status
+    function filterTable(status) {
+        const rows  = document.querySelectorAll('.tx-row');
+        const label = document.getElementById('filterLabel');
+        let visible = 0;
+
+        rows.forEach(row => {
+            const match = status === 'all' || row.dataset.status === status;
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+
+        label.textContent = status === 'all' ? 'All' : status;
+        updateCount(visible);
+        toggleNoResults(visible);
+    }
+
+    // Search by title or author
+    function searchTable(query) {
+        const rows = document.querySelectorAll('.tx-row');
+        const q    = query.toLowerCase().trim();
+        let visible = 0;
+
+        rows.forEach(row => {
+            const title  = row.dataset.title  || '';
+            const author = row.dataset.author || '';
+            const match  = title.includes(q) || author.includes(q);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+
+        updateCount(visible);
+        toggleNoResults(visible);
+    }
+
+    function updateCount(n) {
+        const el = document.getElementById('visibleCount');
+        if (el) el.textContent = n;
+    }
+
+    function toggleNoResults(visible) {
+        const el = document.getElementById('noResults');
+        if (el) el.style.display = visible === 0 ? 'block' : 'none';
+    }
+</script>

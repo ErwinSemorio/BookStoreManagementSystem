@@ -24,12 +24,19 @@
 
         * { box-sizing: border-box; }
 
-        body {
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
+       body {
+    background-image: 
+        linear-gradient(135deg, rgba(10,10,15,0.92) 0%, rgba(26,26,46,0.88) 100%),
+        url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2128&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
 
         /* ── NAVBAR ── */
         .bs-navbar {

@@ -1,213 +1,420 @@
 ﻿@{
     ViewData["Title"] = "Register";
-    Layout = null;
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register - ScholarlyBooks</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        :root {
-            --bg-body: #0d1117;
-            --bg-card: #161b22;
-            --bg-input: #0d1117;
-            --border-color: #30363d;
-            --text-primary: #ffffff;
-            --text-secondary: #8b949e;
-            --accent-green: #238636;
-            --accent-blue: #58a6ff;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 2rem 0;
-        }
-        .auth-container { max-width: 1000px; width: 100%; margin: auto; }
-        .auth-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-        .auth-header { text-align: center; margin-bottom: 2rem; }
-        .auth-header h1 { color: var(--text-primary); font-weight: 700; font-size: 1.75rem; margin: 0; }
-        .auth-header p { color: var(--text-secondary); margin: 0.5rem 0 0; font-size: 0.95rem; }
-        .form-label { font-weight: 500; font-size: 0.85rem; color: var(--text-secondary) !important; margin-bottom: 0.5rem; }
-        .form-control {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary) !important;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 0.95rem;
-        }
-        .form-control::placeholder { color: var(--text-secondary); opacity: 1; }
-        .form-control:focus {
-            background: var(--bg-input);
-            border-color: var(--accent-blue);
-            color: var(--text-primary) !important;
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-        }
-        .input-group-text {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-right: none;
-            color: var(--text-secondary);
-            border-radius: 8px 0 0 8px;
-        }
-        .input-group .form-control { border-radius: 0 8px 8px 0; border-left: none; }
-        .btn-register {
-            background: var(--accent-green);
-            color: white !important;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem;
-            font-weight: 600;
-            font-size: 1rem;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        .btn-register:hover {
-            background: #2ea043;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4);
-        }
-        .preview-wrap { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; }
-        #imgPreview {
-            width: 60px; height: 60px; border-radius: 50%;
-            object-fit: cover; border: 2px solid var(--accent-blue);
-            display: none; background: var(--bg-input);
-        }
-        .auth-footer {
-            text-align: center; margin-top: 1.5rem; padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-        }
-        .auth-footer a { color: var(--accent-blue) !important; text-decoration: none; font-weight: 600; }
-        .auth-footer a:hover { text-decoration: underline; }
-        .alert {
-            background: rgba(248, 81, 73, 0.15);
-            border: 1px solid rgba(248, 81, 73, 0.3);
-            color: #f85149 !important;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-        /* Responsive layout - safely escaped for Razor */
-        @@media (min-width: 992px) {
-            .auth-split { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: center; }
-            .auth-brand { padding: 2rem; }
-            .auth-brand h1 { font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 1rem; }
-            .auth-brand p { color: var(--text-secondary); font-size: 1.1rem; line-height: 1.6; }
-            .brand-badges { display: flex; gap: 1rem; margin-top: 2rem; }
-            .brand-badge {
-                background: var(--bg-card); border: 1px solid var(--border-color);
-                border-radius: 12px; padding: 1rem; text-align: center; flex: 1;
-            }
-            .brand-badge i { font-size: 1.5rem; color: var(--accent-blue); }
-            .brand-badge div { color: white; font-weight: 600; margin-top: 0.5rem; font-size: 0.9rem; }
-        }
-    </style>
-</head>
-<body>
-    <div class="auth-container">
-        <div class="auth-split">
-            <!-- Left: Branding (Desktop Only) -->
-            <div class="auth-brand d-none d-lg-block">
-                <h1>BookStore</h1>
-                <p>A bookstore is a retail establishment that specializes in selling books, acting as a key community hub for finding, browsing, and selecting literature. Ranging from independent shops to large chains, these stores often feature genres like fiction and non-fiction, alongside stationery, gifts, and magazines..</p>
-                <div class="brand-badges">
-                    <div class="brand-badge">
-                        <i class="bi bi-globe2"></i>
-                        <div>Global Archive</div>
-                    </div>
-                    <div class="brand-badge">
-                        <i class="bi bi-graph-up"></i>
-                        <div>Smart Insights</div>
-                    </div>
-                </div>
+
+<div class="login-wrapper">
+    <div class="register-card fade-in-up">
+
+        <!-- LOGO -->
+        <div class="text-center mb-4">
+            <a asp-controller="Books" asp-action="Login" class="login-logo">
+                📚 Book<span>Store</span>
+            </a>
+            <p class="text-secondary mt-2 mb-0" style="font-size:0.95rem;">
+                Create your account and start reading
+            </p>
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="login-divider mb-4"></div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger bs-alert mb-4"
+                 style="border-radius:16px; padding:0.9rem 1.2rem; font-size:0.9rem;">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>@ViewBag.Error
             </div>
+        }
 
-            <!-- Right: Register Form -->
-            <div class="auth-card">
-                <div class="auth-header">
-                    <h1>Create Account</h1>
-                    <p>Join ScholarlyBooks today</p>
+        <form method="post" action="/Account/Register"
+              enctype="multipart/form-data"
+              autocomplete="off">
+
+            <!-- hidden fields to block browser autofill -->
+            <input type="text"     style="display:none" />
+            <input type="password" style="display:none" />
+
+            <div class="row g-3">
+
+                <!-- FULL NAME -->
+                <div class="col-12">
+                    <label class="login-label">
+                        <i class="bi bi-person me-1"></i>Full Name
+                    </label>
+                    <input type="text" name="name"
+                           class="form-control login-input"
+                           placeholder="e.g. Juan dela Cruz"
+                           autocomplete="off" required />
                 </div>
 
-                @if (ViewBag.Error != null)
-                {
-                    <div class="alert mb-4">
-                        <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
-                    </div>
-                }
+                <!-- EMAIL -->
+                <div class="col-12">
+                    <label class="login-label">
+                        <i class="bi bi-envelope me-1"></i>Email Address
+                    </label>
+                    <input type="email" name="email"
+                           class="form-control login-input"
+                           placeholder="you@example.com"
+                           autocomplete="off" required />
+                </div>
 
-                <form method="post" action="/Account/Register" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label class="form-label">Full Name</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" name="name" class="form-control" placeholder="e.g. Dr. Arthur Scholar" required />
+                <!-- PASSWORD -->
+                <div class="col-md-6">
+                    <label class="login-label">
+                        <i class="bi bi-lock me-1"></i>Password
+                    </label>
+                    <div class="position-relative">
+                        <input type="password" name="password" id="regPassword"
+                               class="form-control login-input pe-5"
+                               placeholder="••••••••"
+                               autocomplete="new-password"
+                               oninput="checkStrength(this.value)"
+                               required />
+                        <button type="button" class="pwd-toggle"
+                                onclick="togglePass('regPassword','eyeReg')">
+                            <i id="eyeReg" class="bi bi-eye text-secondary"></i>
+                        </button>
+                    </div>
+                    <!-- Password strength bar -->
+                    <div class="strength-bar mt-2">
+                        <div id="strengthFill" class="strength-fill"></div>
+                    </div>
+                    <small id="strengthText" class="text-secondary" style="font-size:0.75rem;"></small>
+                </div>
+
+                <!-- CONFIRM PASSWORD -->
+                <div class="col-md-6">
+                    <label class="login-label">
+                        <i class="bi bi-lock-fill me-1"></i>Confirm Password
+                    </label>
+                    <div class="position-relative">
+                        <input type="password" name="confirmPassword" id="regConfirm"
+                               class="form-control login-input pe-5"
+                               placeholder="••••••••"
+                               autocomplete="new-password"
+                               oninput="checkMatch()"
+                               required />
+                        <button type="button" class="pwd-toggle"
+                                onclick="togglePass('regConfirm','eyeConfirm')">
+                            <i id="eyeConfirm" class="bi bi-eye text-secondary"></i>
+                        </button>
+                    </div>
+                    <small id="matchText" style="font-size:0.75rem;"></small>
+                </div>
+
+                <!-- PROFILE PICTURE -->
+                <div class="col-12">
+                    <label class="login-label">
+                        <i class="bi bi-image me-1"></i>Profile Picture
+                        <span class="text-secondary fw-normal ms-1">(optional)</span>
+                    </label>
+
+                    <div class="upload-area" id="uploadArea"
+                         onclick="document.getElementById('profileInput').click()">
+                        <!-- Preview -->
+                        <div id="uploadPlaceholder">
+                            <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2 d-block"></i>
+                            <p class="text-secondary mb-1" style="font-size:0.9rem;">
+                                Click to upload photo
+                            </p>
+                            <small class="text-secondary" style="font-size:0.78rem;">
+                                JPG, PNG, GIF, WebP — max 5MB
+                            </small>
+                        </div>
+                        <div id="uploadPreview" style="display:none;" class="text-center">
+                            <img id="imgPreview"
+                                 class="rounded-circle mb-2"
+                                 style="width:80px;height:80px;object-fit:cover;border:3px solid var(--accent);"
+                                 src="#" alt="Preview" />
+                            <p id="imgName" class="text-secondary mb-0" style="font-size:0.82rem;"></p>
+                            <button type="button"
+                                    class="btn btn-sm mt-2"
+                                    style="font-size:0.78rem;color:var(--accent);background:none;border:1px solid var(--accent);border-radius:8px;"
+                                    onclick="clearImage(event)">
+                                Remove
+                            </button>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email Address</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input type="email" name="email" class="form-control" placeholder="scholar@university.edu" required />
-                        </div>
+
+                    <input type="file" name="profileImage" id="profileInput"
+                           hidden accept="image/*"
+                           onchange="previewImage(this)" />
+                </div>
+
+                <!-- TERMS -->
+                <div class="col-12">
+                    <div class="d-flex align-items-start gap-2">
+                        <input type="checkbox" id="terms"
+                               class="form-check-input mt-1"
+                               style="background:var(--bg-glass);border-color:var(--glass-border);min-width:16px;"
+                               required />
+                        <label for="terms" class="text-secondary" style="font-size:0.85rem; cursor:pointer;">
+                            I agree to the
+                            <span style="color:var(--accent);font-weight:600;">Terms of Service</span>
+                            and
+                            <span style="color:var(--accent);font-weight:600;">Privacy Policy</span>
+                        </label>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" name="password" class="form-control" placeholder="••••••••" required />
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Profile Picture <span class="text-secondary">(optional)</span></label>
-                        <input type="file" name="profileImage" class="form-control" accept="image/*" id="profileInput" onchange="previewImage(this)" />
-                        <div class="preview-wrap">
-                            <img id="imgPreview" src="#" alt="Preview" />
-                            <small class="text-secondary" id="previewText"></small>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-register">
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="col-12 mt-2">
+                    <button type="submit" class="btn btn-premium w-100 py-3 fw-bold">
                         <i class="bi bi-person-plus me-2"></i>Create Account
                     </button>
-                </form>
-
-                <div class="auth-footer">
-                    <span class="text-secondary small">Already have an account?</span>
-                    <a href="/Account/Login" class="ms-1">Sign In</a>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function previewImage(input) {
-            const preview = document.getElementById('imgPreview');
-            const text = document.getElementById('previewText');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    text.textContent = input.files[0].name;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+            </div>
+        </form>
+
+        <!-- LOGIN LINK -->
+        <div class="text-center mt-4">
+            <span class="text-secondary" style="font-size:0.9rem;">
+                Already have an account?
+            </span>
+            <a asp-controller="Account" asp-action="Login"
+               class="ms-1 fw-bold text-decoration-none"
+               style="color:var(--accent);font-size:0.9rem;">
+                Sign In
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .register-card {
+        width: 100%;
+        max-width: 560px;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 32px;
+        padding: 3rem 2.5rem;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+
+    .login-logo {
+        font-family: 'Playfair Display', serif;
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ffffff, #e94560);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+    }
+
+    .login-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 2px;
+    }
+
+    .login-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .login-input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 14px !important;
+        color: #ffffff !important;
+        padding: 14px 18px !important;
+        font-size: 0.95rem;
+        transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    }
+
+    .login-input::placeholder { color: rgba(255,255,255,0.2) !important; }
+
+    .login-input:focus {
+        background: rgba(255,255,255,0.09) !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 4px rgba(233,69,96,0.2) !important;
+        transform: scale(1.01);
+        outline: none !important;
+    }
+
+    .login-input.is-valid {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16,185,129,0.2) !important;
+    }
+
+    .login-input.is-invalid {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 4px rgba(233,69,96,0.2) !important;
+    }
+
+    /* Password toggle button */
+    .pwd-toggle {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    /* Password strength */
+    .strength-bar {
+        height: 4px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .strength-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 4px;
+        transition: width 0.4s ease, background 0.4s ease;
+    }
+
+    /* Upload area */
+    .upload-area {
+        border: 2px dashed rgba(255,255,255,0.12);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.25s, background 0.25s;
+        background: rgba(255,255,255,0.03);
+    }
+
+    .upload-area:hover {
+        border-color: var(--accent);
+        background: rgba(233,69,96,0.05);
+    }
+
+    /* Form check */
+    .form-check-input:checked {
+        background-color: var(--accent) !important;
+        border-color: var(--accent) !important;
+    }
+
+    @@media (max-width: 576px) {
+        .register-card { padding: 2rem 1.5rem; }
+        .login-logo { font-size: 28px; }
+    }
+</style>
+
+<script>
+    // Toggle password visibility
+    function togglePass(fieldId, iconId) {
+        const field = document.getElementById(fieldId);
+        const icon  = document.getElementById(iconId);
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
-    </script>
-</body>
-</html>
+    }
+
+    // Password strength checker
+    function checkStrength(val) {
+        const fill = document.getElementById('strengthFill');
+        const text = document.getElementById('strengthText');
+        let strength = 0;
+
+        if (val.length >= 6)                        strength++;
+        if (val.length >= 10)                       strength++;
+        if (/[A-Z]/.test(val))                      strength++;
+        if (/[0-9]/.test(val))                      strength++;
+        if (/[^A-Za-z0-9]/.test(val))              strength++;
+
+        const levels = [
+            { pct: '0%',   color: 'transparent',  label: '' },
+            { pct: '25%',  color: '#e94560',       label: 'Weak' },
+            { pct: '50%',  color: '#f97316',       label: 'Fair' },
+            { pct: '75%',  color: '#eab308',       label: 'Good' },
+            { pct: '90%',  color: '#10b981',       label: 'Strong' },
+            { pct: '100%', color: '#10b981',       label: '💪 Very Strong' },
+        ];
+
+        const level = levels[Math.min(strength, 5)];
+        fill.style.width      = level.pct;
+        fill.style.background = level.color;
+        text.textContent      = level.label;
+        text.style.color      = level.color;
+
+        // also trigger match check if confirm is filled
+        checkMatch();
+    }
+
+    // Password match checker
+    function checkMatch() {
+        const pwd     = document.getElementById('regPassword').value;
+        const confirm = document.getElementById('regConfirm');
+        const text    = document.getElementById('matchText');
+
+        if (confirm.value === '') {
+            confirm.classList.remove('is-valid', 'is-invalid');
+            text.textContent = '';
+            return;
+        }
+
+        if (pwd === confirm.value) {
+            confirm.classList.add('is-valid');
+            confirm.classList.remove('is-invalid');
+            text.textContent  = '✓ Passwords match';
+            text.style.color  = '#10b981';
+        } else {
+            confirm.classList.add('is-invalid');
+            confirm.classList.remove('is-valid');
+            text.textContent  = '✗ Passwords do not match';
+            text.style.color  = '#e94560';
+        }
+    }
+
+    // Image preview
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File too large — max 5MB');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('imgPreview').src = e.target.result;
+                document.getElementById('imgName').textContent = file.name;
+                document.getElementById('uploadPlaceholder').style.display = 'none';
+                document.getElementById('uploadPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Clear image
+    function clearImage(e) {
+        e.stopPropagation();
+        document.getElementById('profileInput').value = '';
+        document.getElementById('imgPreview').src = '#';
+        document.getElementById('imgName').textContent = '';
+        document.getElementById('uploadPlaceholder').style.display = 'block';
+        document.getElementById('uploadPreview').style.display = 'none';
+    }
+</script>

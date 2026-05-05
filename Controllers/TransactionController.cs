@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using System.Text;
 
 namespace BookStoreApp.Controllers
 {
@@ -20,13 +21,12 @@ namespace BookStoreApp.Controllers
 
         private int? GetUserId() => HttpContext.Session.GetInt32("UserId");
 
-        // Updates wallet pill in navbar after every purchase
         private void RefreshWalletSession(decimal newBalance)
         {
             HttpContext.Session.SetString("WalletBalance", newBalance.ToString("N2"));
         }
 
-        // ── GET: /Transaction/Confirm?id=1&quantity=1 ─────────────────────────────
+        // ── GET: /Transaction/Confirm?id=1&quantity=1 ─────────────────────────
         [HttpGet]
         public IActionResult Confirm(int id, int quantity = 1)
         {
@@ -39,7 +39,6 @@ namespace BookStoreApp.Controllers
             var user = _context.Users.FirstOrDefault(u => u.Id == userId);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            // Clamp quantity to valid range
             if (quantity < 1) quantity = 1;
             if (quantity > book.Stock) quantity = book.Stock;
 
@@ -56,7 +55,7 @@ namespace BookStoreApp.Controllers
             return View(book);
         }
 
-        // ── POST: /Transaction/PlaceOrder ─────────────────────────────────────────
+        // ── POST: /Transaction/PlaceOrder ─────────────────────────────────────
         [HttpPost]
         public IActionResult PlaceOrder(int bookId, int quantity)
         {
@@ -72,7 +71,6 @@ namespace BookStoreApp.Controllers
                 return RedirectToAction("Index", "Books");
             }
 
-            // Validate quantity
             if (quantity < 1 || quantity > book.Stock)
             {
                 TempData["Error"] = "Invalid quantity selected.";
@@ -82,21 +80,18 @@ namespace BookStoreApp.Controllers
             decimal totalAmount = book.Price * quantity;
             decimal walletBalance = user.WalletBalance ?? 0m;
 
-            // ── Wallet check ──────────────────────────────────────────────────────
             if (walletBalance < totalAmount)
             {
-                TempData["Error"] = $"Insufficient balance. You need ₱{totalAmount:N2} but only have ₱{walletBalance:N2}. Please reload your wallet.";
+                TempData["Error"] = $"Insufficient balance. You need ₱{totalAmount:N2} but only have ₱{walletBalance:N2}.";
                 return RedirectToAction("Confirm", new { id = bookId, quantity });
             }
 
-            // ── Stock check ───────────────────────────────────────────────────────
             if (book.Stock < quantity)
             {
                 TempData["Error"] = "Not enough stock available.";
                 return RedirectToAction("Confirm", new { id = bookId, quantity });
             }
 
-            // ── Process transaction ───────────────────────────────────────────────
             using (var dbTransaction = _context.Database.BeginTransaction())
             {
                 try
@@ -118,7 +113,6 @@ namespace BookStoreApp.Controllers
                     _context.SaveChanges();
                     dbTransaction.Commit();
 
-                    // Update wallet pill in navbar
                     RefreshWalletSession(user.WalletBalance ?? 0m);
 
                     TempData["Success"] = $"Purchase successful! You bought {quantity}x \"{book.Title}\" for ₱{totalAmount:N2}. Remaining balance: ₱{user.WalletBalance:N2}.";
@@ -133,7 +127,7 @@ namespace BookStoreApp.Controllers
             }
         }
 
-        // ── GET: /Transaction/History ─────────────────────────────────────────────
+        // ── GET: /Transaction/History ─────────────────────────────────────────
         [HttpGet]
         public IActionResult History()
         {
@@ -150,13 +144,56 @@ namespace BookStoreApp.Controllers
                 .ToList();
 
             ViewBag.User = user;
-            ViewBag.WalletBalance = user.WalletBalance ?? 0m;
+            ViewBag.TotalSpent = history.Sum(t => t.TotalAmount);
             ViewBag.TotalUnits = history.Sum(t => t.Quantity);
             ViewBag.LastDate = history.Any()
                                     ? history.First().TransactionDate.ToString("MMM dd, yyyy")
                                     : "—";
 
             return View(history);
+        }
+
+        // ── GET: /Transaction/ExportCsv ───────────────────────────────────────
+        [HttpGet]
+        public IActionResult ExportCsv()
+        {
+            var userId = GetUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Find(userId.Value);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var history = _context.Transactions
+                .Include(t => t.Book)
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.TransactionDate)
+                .ToList();
+
+            var sb = new StringBuilder();
+
+            // Header row
+            sb.AppendLine("Transaction ID,Book Title,Author,Quantity,Amount (PHP),Date,Status");
+
+            // Data rows
+            foreach (var t in history)
+            {
+                var title = $"\"{t.Book?.Title?.Replace("\"", "'")}\"";
+                var author = $"\"{t.Book?.Author?.Replace("\"", "'")}\"";
+                sb.AppendLine($"{t.Id},{title},{author},{t.Quantity},{t.TotalAmount:N2},{t.TransactionDate:yyyy-MM-dd HH:mm},{t.Status}");
+            }
+
+            // Summary rows
+            sb.AppendLine();
+            sb.AppendLine($",,,,,,");
+            sb.AppendLine($"Exported by,{user.Name},,,,{DateTime.Now:yyyy-MM-dd HH:mm},");
+            sb.AppendLine($"Total Transactions,{history.Count},,,,");
+            sb.AppendLine($"Total Spent,\"{history.Sum(t => t.TotalAmount):N2}\",,,,");
+            sb.AppendLine($"Current Balance,\"{user.WalletBalance:N2}\",,,,");
+
+            var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
+            var fileName = $"BookStore_Transactions_{user.Name?.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.csv";
+
+            return File(bytes, "text/csv", fileName);
         }
     }
 }
