@@ -14,6 +14,7 @@ wwwroot\images\books\mockingbird.jpg
 wwwroot\images\books\pride.jpg
 wwwroot\images\books\profile.jpg
 wwwroot\images\books\richdad.jpg
+wwwroot\images\d460cf8b-0d05-4a08-9887-911391acfde2.jpg
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -75,10 +76,9 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\js\site.js
-C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\LICENSE.txt
+C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\favicon.ico
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\dist\jquery.slim.min.map
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\dist\jquery.slim.min.js
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\dist\jquery.slim.js
@@ -135,5 +135,6 @@ C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bo
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
-C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\favicon.ico
+C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\css\site.css
+C:\Users\Erwin\OneDrive\Desktop\INTPROG\BookStoreApp\BookStoreApp\wwwroot\lib\jquery\LICENSE.txt

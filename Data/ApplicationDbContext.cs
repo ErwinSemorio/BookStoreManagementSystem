@@ -11,5 +11,6 @@ namespace BookStoreApp.Data
         public DbSet<Users> Users { get; set; } = null!;
         public DbSet<Book> Books { get; set; } = null!;
         public DbSet<Transaction> Transactions { get; set; } = null!;
+        public DbSet<Wishlist> Wishlists { get; set; } = null!;
     }
 }

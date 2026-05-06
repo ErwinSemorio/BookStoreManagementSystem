@@ -22,7 +22,6 @@ namespace BookStoreApp.Controllers
 
         private bool IsLoggedIn() => HttpContext.Session.GetInt32("UserId") != null;
 
-        // ── Saves all session values including WalletBalance for the navbar pill ──
         private void SetSession(Users user)
         {
             HttpContext.Session.SetInt32("UserId", user.Id);
@@ -31,7 +30,7 @@ namespace BookStoreApp.Controllers
             HttpContext.Session.SetString("WalletBalance", (user.WalletBalance ?? 0m).ToString("N2"));
         }
 
-        // ── Register GET ──────────────────────────────────────────────────────────
+        // ── Register GET ──────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Register()
         {
@@ -39,11 +38,13 @@ namespace BookStoreApp.Controllers
             return View();
         }
 
-        // ── Register POST ─────────────────────────────────────────────────────────
+        // ── Register POST ─────────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Register(string name, string email, string password, IFormFile? profileImage)
+        public async Task<IActionResult> Register(string name, string email,
+                                                   string password, IFormFile? profileImage)
         {
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password))
             {
                 ViewBag.Error = "All fields are required.";
                 return View();
@@ -65,7 +66,6 @@ namespace BookStoreApp.Controllers
                     ViewBag.Error = "Profile image must be jpg, png, gif, or webp.";
                     return View();
                 }
-
                 fileName = Guid.NewGuid().ToString() + ext;
                 var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
@@ -90,7 +90,7 @@ namespace BookStoreApp.Controllers
             return RedirectToAction("Login");
         }
 
-        // ── Login GET ─────────────────────────────────────────────────────────────
+        // ── Login GET ─────────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Login()
         {
@@ -98,7 +98,7 @@ namespace BookStoreApp.Controllers
             return View();
         }
 
-        // ── Login POST ────────────────────────────────────────────────────────────
+        // ── Login POST ────────────────────────────────────────────────────────
         [HttpPost]
         public IActionResult Login(string email, string password)
         {
@@ -117,12 +117,12 @@ namespace BookStoreApp.Controllers
                 return View();
             }
 
-            SetSession(user); // saves WalletBalance to session → shows in navbar
+            SetSession(user);
             TempData["Success"] = $"Welcome back, {user.Name}!";
             return RedirectToAction("Index", "Books");
         }
 
-        // ── Logout ────────────────────────────────────────────────────────────────
+        // ── Logout ────────────────────────────────────────────────────────────
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
@@ -130,7 +130,7 @@ namespace BookStoreApp.Controllers
             return RedirectToAction("Login");
         }
 
-        // ── Profile ───────────────────────────────────────────────────────────────
+        // ── Profile ───────────────────────────────────────────────────────────
         public IActionResult Profile()
         {
             if (!IsLoggedIn()) return RedirectToAction("Login");
@@ -145,10 +145,31 @@ namespace BookStoreApp.Controllers
                 return RedirectToAction("Login");
             }
 
+            // Real transaction data
+            var transactions = _db.Transactions
+                .Include(t => t.Book)
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.TransactionDate)
+                .ToList();
+
+            // Real wishlist data
+            var wishlist = _db.Wishlists
+                .Include(w => w.Book)
+                .Where(w => w.UserId == userId)
+                .OrderByDescending(w => w.AddedDate)
+                .ToList();
+
+            // Books owned = sum of all quantities purchased
+            var booksOwned = transactions.Sum(t => t.Quantity);
+
+            ViewBag.Transactions = transactions;
+            ViewBag.Wishlist = wishlist;
+            ViewBag.BooksOwned = booksOwned;
+
             return View(user);
         }
 
-        // ── Edit GET ──────────────────────────────────────────────────────────────
+        // ── Edit GET ──────────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Edit()
         {
@@ -163,7 +184,7 @@ namespace BookStoreApp.Controllers
             return View(user);
         }
 
-        // ── Edit POST ─────────────────────────────────────────────────────────────
+        // ── Edit POST ─────────────────────────────────────────────────────────
         [HttpPost]
         public async Task<IActionResult> Edit(string name, string email,
                                               string? newPassword, string? confirmPassword,
@@ -187,7 +208,6 @@ namespace BookStoreApp.Controllers
                 return View(user);
             }
 
-            // Password change with confirm check
             if (!string.IsNullOrWhiteSpace(newPassword))
             {
                 if (newPassword != confirmPassword)
@@ -198,7 +218,6 @@ namespace BookStoreApp.Controllers
                 user.Password = newPassword;
             }
 
-            // Profile image upload
             if (profileImage != null && profileImage.Length > 0)
             {
                 var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
@@ -209,7 +228,6 @@ namespace BookStoreApp.Controllers
                     return View(user);
                 }
 
-                // Delete old image file
                 if (!string.IsNullOrEmpty(user.ProfileImage))
                 {
                     var oldPath = Path.Combine(_env.WebRootPath, "images", user.ProfileImage);
@@ -229,13 +247,13 @@ namespace BookStoreApp.Controllers
             user.Email = email.Trim().ToLower();
 
             await _db.SaveChangesAsync();
+            SetSession(user);
 
-            SetSession(user); // refreshes wallet balance in navbar after edit
             TempData["Success"] = "Profile updated successfully!";
             return RedirectToAction("Profile");
         }
 
-        // ── Reload Wallet GET ─────────────────────────────────────────────────────
+        // ── Reload Wallet GET ─────────────────────────────────────────────────
         [HttpGet]
         public IActionResult ReloadWallet()
         {
@@ -251,171 +269,37 @@ namespace BookStoreApp.Controllers
             return View();
         }
 
-        // ── Reload Wallet POST ────────────────────────────────────────────────────
+        // ── Reload Wallet POST ────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> EditProfile(string name, string email,
-                                      string? newPassword, string? confirmPassword,
-                                      IFormFile? ProfileImage)
+        public async Task<IActionResult> ReloadWallet(decimal amount)
         {
+            if (!IsLoggedIn()) return RedirectToAction("Login");
+
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login");
 
             var user = await _db.Users.FindAsync(userId.Value);
             if (user == null) return RedirectToAction("Login");
 
-            // VALIDATION
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
+            if (amount < 100m)
             {
-                ViewBag.Error = "Name and email cannot be empty.";
-                return View(user);
+                ViewBag.Error = "Minimum reload amount is ₱100.";
+                ViewBag.CurrentBalance = user.WalletBalance ?? 0m;
+                return View();
             }
 
-            if (_db.Users.Any(u => u.Email == email.Trim().ToLower() && u.Id != userId))
+            if (amount > 50000m)
             {
-                ViewBag.Error = "Email already used.";
-                return View(user);
+                ViewBag.Error = "Maximum reload amount is ₱50,000.";
+                ViewBag.CurrentBalance = user.WalletBalance ?? 0m;
+                return View();
             }
 
-            // PASSWORD
-            if (!string.IsNullOrWhiteSpace(newPassword))
-            {
-                if (newPassword != confirmPassword)
-                {
-                    ViewBag.Error = "Passwords do not match.";
-                    return View(user);
-                }
-
-                user.Password = newPassword;
-            }
-
-            // IMAGE UPLOAD
-            if (ProfileImage != null && ProfileImage.Length > 0)
-            {
-                var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-                var ext = Path.GetExtension(ProfileImage.FileName).ToLower();
-
-                if (!allowed.Contains(ext))
-                {
-                    ViewBag.Error = "Invalid image format.";
-                    return View(user);
-                }
-
-                // delete old image
-                if (!string.IsNullOrEmpty(user.ProfileImage))
-                {
-                    var oldPath = Path.Combine(_env.WebRootPath, "images", user.ProfileImage);
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
-
-                // save new image
-                var fileName = Guid.NewGuid().ToString() + ext;
-                var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
-
-                using (var stream = new FileStream(savePath, FileMode.Create))
-                {
-                    await ProfileImage.CopyToAsync(stream);
-                }
-
-                user.ProfileImage = fileName;
-            }
-
-            // UPDATE USER
-            user.Name = name.Trim();
-            user.Email = email.Trim().ToLower();
-
+            user.WalletBalance = (user.WalletBalance ?? 0m) + amount;
             await _db.SaveChangesAsync();
-
-            // UPDATE SESSION
             SetSession(user);
 
-            TempData["Success"] = "Profile updated successfully!";
-            return RedirectToAction("Profile");
-        }
-
-        // ── Edit Profile POST ────────────────────────────────────────────────────
-        [HttpPost]
-        public async Task<IActionResult> EditP(string name, string email,
-                                             string? newPassword, string? confirmPassword,
-                                             IFormFile? ProfileImage)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login");
-
-            var user = await _db.Users.FindAsync(userId.Value);
-            if (user == null) return RedirectToAction("Login");
-
-            // VALIDATION
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
-            {
-                ViewBag.Error = "Name and email cannot be empty.";
-                return View(user);
-            }
-
-            if (_db.Users.Any(u => u.Email == email.Trim().ToLower() && u.Id != userId))
-            {
-                ViewBag.Error = "Email already used.";
-                return View(user);
-            }
-
-            // PASSWORD
-            if (!string.IsNullOrWhiteSpace(newPassword))
-            {
-                if (newPassword != confirmPassword)
-                {
-                    ViewBag.Error = "Passwords do not match.";
-                    return View(user);
-                }
-
-                user.Password = newPassword;
-            }
-
-            // IMAGE UPLOAD
-            if (ProfileImage != null && ProfileImage.Length > 0)
-            {
-                var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-                var ext = Path.GetExtension(ProfileImage.FileName).ToLower();
-
-                if (!allowed.Contains(ext))
-                {
-                    ViewBag.Error = "Invalid image format.";
-                    return View(user);
-                }
-
-                // delete old image
-                if (!string.IsNullOrEmpty(user.ProfileImage))
-                {
-                    var oldPath = Path.Combine(_env.WebRootPath, "images", user.ProfileImage);
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
-
-                // save new image
-                var fileName = Guid.NewGuid().ToString() + ext;
-                var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
-
-                using (var stream = new FileStream(savePath, FileMode.Create))
-                {
-                    await ProfileImage.CopyToAsync(stream);
-                }
-
-                user.ProfileImage = fileName;
-            }
-
-            // UPDATE USER
-            user.Name = name.Trim();
-            user.Email = email.Trim().ToLower();
-
-            await _db.SaveChangesAsync();
-
-            // UPDATE SESSION
-            SetSession(user);
-
-            TempData["Success"] = "Profile updated successfully!";
+            TempData["Success"] = $"₱{amount:N2} added! New balance: ₱{user.WalletBalance:N2}";
             return RedirectToAction("Profile");
         }
     }

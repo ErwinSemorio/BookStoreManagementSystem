@@ -3,38 +3,256 @@
     decimal currentBalance = ViewBag.CurrentBalance ?? 0m;
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-    <div class="col-md-6 col-lg-5">
-        <a href="/Account/Profile" class="btn btn-sm btn-link text-white-50 text-decoration-none mb-3 ps-0">
-            <i class="bi bi-arrow-left me-1"></i> Back to Profile
-        </a>
+<div class="login-wrapper">
+    <div class="reload-card fade-in-up">
 
-        <div class="card-glass p-4 text-center">
-            <h3 class="fw-bold mb-4">💳 Reload Wallet</h3>
-            
-            <div class="p-3 rounded-3 mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                <small class="text-white-50 text-uppercase fw-bold">Current Balance</small>
-                <div class="fs-3 fw-bold text-success mt-1">@currentBalance.ToString("N2")</div>
+        <!-- HEADER -->
+        <div class="text-center mb-4">
+            <div class="wallet-icon-circle mx-auto mb-3">
+                <i class="bi bi-wallet2 fs-2 text-white"></i>
+            </div>
+            <h2 class="fw-bold text-white mb-1" style="font-family:'Playfair Display',serif;">
+                Reload Wallet
+            </h2>
+            <p class="text-secondary mb-0" style="font-size:0.9rem;">
+                Add funds to your BookStore wallet
+            </p>
+        </div>
+
+        <!-- CURRENT BALANCE -->
+        <div class="balance-display mb-4">
+            <small class="text-secondary text-uppercase fw-bold d-block mb-1"
+                   style="font-size:0.75rem;letter-spacing:1px;">
+                Current Balance
+            </small>
+            <h2 class="text-white fw-bold mb-0">₱@currentBalance.ToString("N2")</h2>
+        </div>
+
+        <div class="login-divider mb-4"></div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger bs-alert mb-4"
+                 style="border-radius:14px;padding:0.9rem 1.2rem;font-size:0.9rem;">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>@ViewBag.Error
+            </div>
+        }
+
+        <form method="post" action="/Account/ReloadWallet">
+
+            <!-- PRESET AMOUNTS -->
+            <p class="login-label mb-2">Quick Select</p>
+            <div class="row g-2 mb-4">
+                @foreach (var amt in new[] { 100, 200, 500, 1000, 2000, 5000 })
+                {
+                    <div class="col-4">
+                        <button type="button"
+                                class="preset-btn w-100"
+                                onclick="setAmount(@amt)">
+                            ₱@amt.ToString("N0")
+                        </button>
+                    </div>
+                }
             </div>
 
-            @if (ViewBag.Error != null)
-            {
-                <div class="alert alert-danger bg-danger bg-opacity-25 border-0 text-danger small py-2 mb-4">
-                    <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
+            <!-- CUSTOM AMOUNT -->
+            <div class="mb-4">
+                <label class="login-label">
+                    <i class="bi bi-pencil me-1"></i>Custom Amount
+                </label>
+                <div class="position-relative">
+                    <span class="position-absolute fw-bold text-secondary"
+                          style="left:18px;top:50%;transform:translateY(-50%);font-size:1rem;">₱</span>
+                    <input type="number" name="amount" id="amountInput"
+                           class="form-control login-input ps-5 text-white"
+                           placeholder="Enter amount"
+                           min="100" max="50000" step="0.01"
+                           style="font-size:1.1rem;font-weight:600;"
+                           oninput="updatePreview(this.value)"
+                           required />
                 </div>
-            }
+                <small class="text-secondary" style="font-size:0.78rem;">
+                    Min: ₱100 &nbsp;•&nbsp; Max: ₱50,000
+                </small>
+            </div>
 
-            <form method="post" action="/Account/ReloadWallet">
-                <div class="mb-4">
-                    <label class="form-label small text-white-50 fw-bold text-start">AMOUNT TO ADD</label>
-                    <!-- Fixed: Removed bg-light so text is visible on dark theme -->
-                    <input type="number" name="amount" step="0.01" min="1" class="form-control py-3 text-center fs-5" placeholder="0.00" required />
+            <!-- BALANCE PREVIEW -->
+            <div class="preview-box mb-4" id="previewBox" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary" style="font-size:0.9rem;">Current Balance</span>
+                    <span class="text-white fw-bold">₱@currentBalance.ToString("N2")</span>
                 </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="text-secondary" style="font-size:0.9rem;">Adding</span>
+                    <span style="color:#10b981;font-weight:700;" id="addingAmt">₱0.00</span>
+                </div>
+                <div class="preview-divider my-2"></div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-white fw-semibold">New Balance</span>
+                    <span class="fw-bold fs-5" style="color:#10b981;" id="newBalance">
+                        ₱@currentBalance.ToString("N2")
+                    </span>
+                </div>
+            </div>
 
-                <button type="submit" class="btn btn-primary-custom w-100 py-3">
-                    <i class="bi bi-plus-circle me-2"></i>Add Funds
-                </button>
-            </form>
+            <!-- SUBMIT -->
+            <button type="submit" class="btn btn-premium w-100 py-3 fw-bold fs-5">
+                <i class="bi bi-plus-circle me-2"></i>Add Funds
+            </button>
+
+        </form>
+
+        <!-- BACK LINK -->
+        <div class="text-center mt-4">
+            <a href="/Account/Profile"
+                   class="text-secondary text-decoration-none"
+                   style="font-size:0.88rem;">
+                <i class="bi bi-arrow-left me-1"></i>Back to Profile
+            </a>
         </div>
+
     </div>
 </div>
+
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .reload-card {
+        width: 100%;
+        max-width: 460px;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 32px;
+        padding: 2.5rem 2rem;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+
+    .wallet-icon-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #059669, #10b981);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+    }
+
+    .balance-display {
+        background: rgba(16,185,129,0.1);
+        border: 1px solid rgba(16,185,129,0.2);
+        border-radius: 16px;
+        padding: 1.2rem 1.5rem;
+    }
+
+    .login-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 2px;
+    }
+
+    .login-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .login-input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 14px !important;
+        color: #ffffff !important;
+        padding: 14px 18px !important;
+        font-size: 0.95rem;
+        transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+        .login-input::placeholder {
+            color: rgba(255,255,255,0.2) !important;
+        }
+
+        .login-input:focus {
+            background: rgba(255,255,255,0.09) !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.2) !important;
+            outline: none !important;
+        }
+
+    /* Preset amount buttons */
+    .preset-btn {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        color: var(--text-secondary);
+        padding: 0.65rem 0.5rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .preset-btn:hover,
+        .preset-btn.active {
+            background: rgba(16,185,129,0.15);
+            border-color: #10b981;
+            color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.2);
+        }
+
+    /* Balance preview box */
+    .preview-box {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+    }
+
+    .preview-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+    }
+</style>
+
+<script>
+    const currentBalance = @currentBalance;
+
+    function setAmount(val) {
+        document.getElementById('amountInput').value = val;
+        // highlight active preset
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        updatePreview(val);
+    }
+
+    function updatePreview(val) {
+        const amount = parseFloat(val);
+        const box    = document.getElementById('previewBox');
+
+        if (!val || isNaN(amount) || amount <= 0) {
+            box.style.display = 'none';
+            return;
+        }
+
+        box.style.display = 'block';
+        document.getElementById('addingAmt').textContent  = '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        document.getElementById('newBalance').textContent = '₱' + (currentBalance + amount).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+
+        // clear preset highlight if custom
+        const presets = [100, 200, 500, 1000, 2000, 5000];
+        document.querySelectorAll('.preset-btn').forEach((b, i) => {
+            b.classList.toggle('active', presets[i] === amount);
+        });
+    }
+</script>

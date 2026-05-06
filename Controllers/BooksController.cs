@@ -40,7 +40,6 @@ namespace BookStoreApp.Controllers
             _context.SaveChanges();
         }
 
-        // FIXED: Merged duplicate Index() methods into one
         public async Task<IActionResult> Index(string? searchString)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -55,7 +54,9 @@ namespace BookStoreApp.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                booksQuery = booksQuery.Where(b => b.Title.Contains(searchString) || b.Author.Contains(searchString));
+                booksQuery = booksQuery.Where(b =>
+                    b.Title.Contains(searchString) ||
+                    b.Author.Contains(searchString));
             }
 
             var model = new DashboardViewModel
@@ -68,6 +69,7 @@ namespace BookStoreApp.Controllers
             return View(model);
         }
 
+        // FIXED: Added InWishlist check via ViewBag
         public async Task<IActionResult> Details(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -75,6 +77,12 @@ namespace BookStoreApp.Controllers
 
             var book = await _context.Books.FindAsync(id);
             if (book == null) return NotFound();
+
+            // Check wishlist status and pass to view via ViewBag
+            bool inWishlist = await _context.Wishlists
+                .AnyAsync(w => w.UserId == userId && w.BookId == id);
+
+            ViewBag.InWishlist = inWishlist;
 
             return View(book);
         }

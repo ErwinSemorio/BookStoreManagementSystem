@@ -1,12 +1,37 @@
 ﻿@model BookStoreApp.Models.Book
 @{
     ViewData["Title"] = Model.Title;
+    bool inWishlist = false;
+
+    var userId = Context.Session.GetInt32("UserId");
+    if (userId != null)
+    {
+        var db = Context.RequestServices
+            .GetRequiredService<BookStoreApp.Data.ApplicationDbContext>();
+        inWishlist = db.Wishlists
+                       .Any(w => w.UserId == userId && w.BookId == Model.Id);
+    }
+
+    string imageUrl = Model.Title switch
+    {
+        "Harry Potter and the Sorcerer's Stone" => "/images/books/harry.jpg",
+        "The Alchemist" => "/images/books/alchemist.jpg",
+        "Rich Dad Poor Dad" => "/images/books/richdad.jpg",
+        "To Kill a Mockingbird" => "/images/books/mockingbird.jpg",
+        "The Great Gatsby" => "/images/books/gatsby.jpg",
+        "1984" => "/images/books/1984.jpg",
+        "Atomic Habits" => "/images/books/atomic.jpg",
+        "The 48 Laws of Power" => "/images/books/48laws.jpg",
+        _ => !string.IsNullOrEmpty(Model.CoverImage)
+                ? $"/images/books/{Model.CoverImage}" : ""
+    };
 }
 
 <div class="container py-5">
     <!-- Back Button -->
     <div class="mb-5">
-        <a href="/Books/Index" class="btn btn-glass rounded-pill px-5 py-2 fw-bold text-decoration-none fade-in-up">
+        <a href="/Books/Index"
+               class="btn btn-glass rounded-pill px-5 py-2 fw-bold text-decoration-none fade-in-up">
             <i class="bi bi-arrow-left me-2"></i>Back to Collection
         </a>
     </div>
@@ -14,79 +39,81 @@
     <div class="row g-5">
         <!-- BOOK IMAGE & ACTION BUTTONS -->
         <div class="col-lg-5">
-            <div class="glass-card p-5 text-center position-sticky" style="top: 120px; height: fit-content;" data-hover>
-                <div class="book-hero-image mb-5 position-relative mx-auto overflow-hidden rounded-4 shadow-lg" 
-                     style="width: 320px; height: 420px; background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
-                    
-                    @{
-                        string imageUrl = Model.Title switch
-                        {
-                            "Harry Potter and the Sorcerer's Stone" => "/images/books/harry.jpg",
-                            "The Alchemist" => "/images/books/alchemist.jpg",
-                            "Rich Dad Poor Dad" => "/images/books/richdad.jpg",
-                            "To Kill a Mockingbird" => "/images/books/mockingbird.jpg",
-                            "The Great Gatsby" => "/images/books/gatsby.jpg",
-                            "1984" => "/images/books/1984.jpg",
-                            "Atomic Habits" => "/images/books/atomic.jpg",
-                            "The 48 Laws of Power" => "/images/books/48laws.jpg",
-                            _ => !string.IsNullOrEmpty(Model.CoverImage) ? $"/images/books/{Model.CoverImage}" : ""
-                        };
-                    }
+            <div class="glass-card p-5 text-center position-sticky"
+                 style="top:120px;height:fit-content;" data-hover>
+
+                <div class="book-hero-image mb-5 position-relative mx-auto overflow-hidden rounded-4 shadow-lg"
+                     style="width:320px;height:420px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);">
 
                     @if (!string.IsNullOrEmpty(imageUrl))
                     {
-                        <img src="@imageUrl" alt="@Model.Title" 
-                             class="w-100 h-100 position-absolute" 
-                             style="object-fit: cover; transition: transform 0.5s ease;" />
+                        <img src="@imageUrl" alt="@Model.Title"
+                             class="w-100 h-100 position-absolute"
+                             style="object-fit:cover;transition:transform 0.5s ease;" />
                     }
                     else
                     {
                         <div class="d-flex flex-column align-items-center justify-content-center h-100 px-4">
                             <i class="bi bi-book display-1 text-white opacity-25 mb-3"></i>
-                            <p class="text-white opacity-50 mb-0 text-center">Cover image not available</p>
+                            <p class="text-white opacity-50 mb-0 text-center">Cover not available</p>
                         </div>
                     }
 
                     @if (Model.Stock > 0)
                     {
-                        <div class="position-absolute top-4 end-4">
-                            <span class="badge @(Model.Stock < 5 ? "bg-warning text-dark shadow" : "bg-success shadow") px-4 py-2 rounded-pill fs-6 fw-bold">
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge @(Model.Stock < 5 ? "bg-warning text-dark" : "bg-success") px-3 py-2 rounded-pill fw-bold">
                                 @(Model.Stock < 5 ? $"⚡ {Model.Stock} left" : "✅ In Stock")
                             </span>
                         </div>
                     }
                 </div>
 
-                <!-- QUICK ACTIONS -->
+                <!-- ACTION BUTTONS -->
                 <div class="d-grid gap-3">
                     <form asp-controller="Transaction" asp-action="Confirm" method="get" class="d-grid">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <input type="hidden" name="quantity" value="1" />
-                        <button type="submit" class="btn btn-premium fs-5 py-4 rounded-3 fw-bold shadow-lg" data-hover>
+                        <button type="submit"
+                                class="btn btn-premium fs-5 py-4 rounded-3 fw-bold shadow-lg"
+                                data-hover>
                             <i class="bi bi-lightning-charge me-2"></i>
-                            Buy Now - ₱@Model.Price.ToString("N2")
+                            Buy Now — ₱@Model.Price.ToString("N2")
                         </button>
                     </form>
-                    
-                    <button class="btn btn-glass fs-6 py-3 rounded-3 fw-bold" data-hover>
-                        <i class="bi bi-heart me-2"></i>Add to Wishlist
+
+                    <!-- WISHLIST TOGGLE BUTTON -->
+                    <button id="wishlistBtn"
+                            class="btn @(inWishlist ? "btn-wishlist-active" : "btn-glass") fs-6 py-3 rounded-3 fw-bold"
+                            onclick="toggleWishlist(@Model.Id)"
+                            data-hover>
+                        <i id="wishlistIcon"
+                           class="bi @(inWishlist ? "bi-heart-fill" : "bi-heart") me-2"></i>
+                        <span id="wishlistText">
+                            @(inWishlist ? "Remove from Wishlist" : "Add to Wishlist")
+                        </span>
                     </button>
                 </div>
+
+                <!-- WISHLIST TOAST -->
+                <div id="wishlistToast"
+                     class="mt-3 py-2 px-3 rounded-3"
+                     style="display:none;font-size:0.85rem;font-weight:600;"></div>
+
             </div>
         </div>
 
         <!-- BOOK CONTENT -->
         <div class="col-lg-7">
-            <!-- HEADER -->
             <div class="glass-card p-5 mb-5 fade-in-up" data-hover>
                 <div class="d-flex align-items-start justify-content-between flex-wrap gap-4 mb-4">
                     <div class="flex-grow-1">
-                        <h1 class="display-4 fw-bold mb-3 lh-1 text-white" style="font-family: 'Playfair Display', serif;">
+                        <h1 class="display-4 fw-bold mb-3 lh-1 text-white"
+                            style="font-family:'Playfair Display',serif;">
                             @Model.Title
                         </h1>
-                        <h3 class="text-accent fw-bold mb-3 fs-3">@Model.Author</h3>
-                        
-                        <!-- RATINGS -->
+                        <h3 class="fw-bold mb-3 fs-3" style="color:var(--accent);">@Model.Author</h3>
+
                         <div class="d-flex align-items-center gap-3 mb-4">
                             <div class="star-rating d-flex">
                                 <i class="bi bi-star-fill text-warning fs-5"></i>
@@ -98,16 +125,17 @@
                             <span class="text-secondary fs-5 fw-bold">4.8 (2,847)</span>
                         </div>
 
-                        <!-- PRICE & STOCK -->
                         <div class="d-flex align-items-center gap-4">
                             <div>
                                 <small class="text-secondary text-uppercase fw-bold d-block mb-1">Price</small>
-                                <h2 class="text-accent fw-bold mb-0 display-6">₱@Model.Price.ToString("N2")</h2>
+                                <h2 class="fw-bold mb-0 display-6" style="color:var(--accent);">
+                                    ₱@Model.Price.ToString("N2")
+                                </h2>
                             </div>
-                            <div class="vr mx-4 opacity-25" style="width: 1px; height: 60px;"></div>
+                            <div class="vr mx-4 opacity-25" style="width:1px;height:60px;"></div>
                             <div>
                                 <small class="text-secondary text-uppercase fw-bold d-block mb-1">Stock</small>
-                                <span class="badge @(Model.Stock < 5 ? "bg-warning text-dark fs-6 px-4 py-2 fw-bold" : "bg-success fs-6 px-4 py-2 fw-bold")">
+                                <span class="badge @(Model.Stock < 5 ? "bg-warning text-dark" : "bg-success") fs-6 px-4 py-2 fw-bold">
                                     @Model.Stock available
                                 </span>
                             </div>
@@ -116,41 +144,43 @@
                 </div>
             </div>
 
-            <!-- DESCRIPTION & DETAILS -->
             <div class="glass-card p-5 fade-in-up" data-hover>
-                <!-- TABS -->
-                <ul class="nav nav-tabs mb-5 border-0" style="background: rgba(255,255,255,0.05); border-radius: 20px; padding: 6px; backdrop-filter: blur(20px);">
+                <ul class="nav nav-tabs mb-5 border-0"
+                    style="background:rgba(255,255,255,0.05);border-radius:20px;padding:6px;backdrop-filter:blur(20px);">
                     <li class="nav-item w-50 text-center">
-                        <a class="nav-link active px-0 py-3 fw-bold fs-5 text-white rounded-3" data-bs-toggle="tab" href="#description">
+                        <a class="nav-link active px-0 py-3 fw-bold fs-5 text-white rounded-3"
+                               data-bs-toggle="tab" href="#description">
                             <i class="bi bi-card-text me-2"></i>Description
                         </a>
                     </li>
                     <li class="nav-item w-50 text-center">
-                        <a class="nav-link px-0 py-3 fw-bold fs-5 text-secondary" data-bs-toggle="tab" href="#details">
+                        <a class="nav-link px-0 py-3 fw-bold fs-5 text-secondary"
+                               data-bs-toggle="tab" href="#details">
                             <i class="bi bi-info-circle me-2"></i>Details
                         </a>
                     </li>
                 </ul>
 
-                <!-- TAB CONTENT -->
                 <div class="tab-content">
-                    <!-- DESCRIPTION -->
                     <div class="tab-pane fade show active" id="description">
-                        <div class="lead text-secondary mb-5 lh-lg" style="line-height: 1.8;">
+                        <div class="lead text-secondary mb-5 lh-lg" style="line-height:1.8;">
                             @if (!string.IsNullOrEmpty(Model.Description))
                             {
                                 @Html.Raw(Model.Description)
                             }
                             else
                             {
-                                <p>Discover the captivating story of <strong>@Model.Title</strong> by <em>@Model.Author</em>. This timeless classic explores profound themes through unforgettable characters and masterful storytelling. Perfect for readers seeking both entertainment and enlightenment.</p>
+                                <p>
+                                    Discover the captivating story of <strong>@Model.Title</strong>
+                                    by <em>@Model.Author</em>. This timeless classic explores profound
+                                    themes through unforgettable characters and masterful storytelling.
+                                </p>
                             }
                         </div>
-
-                        <!-- QUICK SPECS -->
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <div class="d-flex align-items-center p-4 rounded-3" style="background: rgba(255,255,255,0.05);">
+                                <div class="d-flex align-items-center p-4 rounded-3"
+                                     style="background:rgba(255,255,255,0.05);">
                                     <div class="bg-success bg-opacity-20 rounded-circle p-3 me-3">
                                         <i class="bi bi-file-earmark-text text-success fs-4"></i>
                                     </div>
@@ -161,18 +191,23 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="d-flex align-items-center p-4 rounded-3" style="background: rgba(255,255,255,0.05);">
-                                    <div class="bg-accent bg-opacity-20 rounded-circle p-3 me-3">
-                                        <i class="bi bi-calendar3 text-accent fs-4"></i>
+                                <div class="d-flex align-items-center p-4 rounded-3"
+                                     style="background:rgba(255,255,255,0.05);">
+                                    <div class="bg-opacity-20 rounded-circle p-3 me-3"
+                                         style="background:rgba(233,69,96,0.2);">
+                                        <i class="bi bi-calendar3 fs-4" style="color:var(--accent);"></i>
                                     </div>
                                     <div>
                                         <h6 class="fw-bold text-white mb-1">Published</h6>
-                                        <span class="text-secondary">@(Model.PublishedDate?.ToString("MMM yyyy") ?? "2023")</span>
+                                        <span class="text-secondary">
+                                            @(Model.PublishedDate?.ToString("MMM yyyy") ?? "2023")
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="d-flex align-items-center p-4 rounded-3" style="background: rgba(255,255,255,0.05);">
+                                <div class="d-flex align-items-center p-4 rounded-3"
+                                     style="background:rgba(255,255,255,0.05);">
                                     <div class="bg-primary bg-opacity-20 rounded-circle p-3 me-3">
                                         <i class="bi bi-translate text-primary fs-4"></i>
                                     </div>
@@ -185,7 +220,6 @@
                         </div>
                     </div>
 
-                    <!-- DETAILS -->
                     <div class="tab-pane fade" id="details">
                         <div class="row g-4">
                             <div class="col-md-6">
@@ -198,7 +232,9 @@
                             </div>
                             <div class="col-md-6">
                                 <strong class="text-white fs-5 d-block mb-2">Publisher</strong>
-                                <span class="text-secondary fs-5">@(Model.Publisher ?? "Penguin Random House")</span>
+                                <span class="text-secondary fs-5">
+                                    @(Model.Publisher ?? "Penguin Random House")
+                                </span>
                             </div>
                             <div class="col-md-6">
                                 <strong class="text-white fs-5 d-block mb-2">Format</strong>
@@ -213,21 +249,90 @@
 </div>
 
 <style>
-.book-hero-image:hover img { 
-    transform: scale(1.05) !important; 
-}
-.nav-tabs .nav-link.active {
-    background: linear-gradient(135deg, var(--accent), #ff6b9d) !important;
-    box-shadow: 0 8px 25px rgba(233,69,96,0.3);
-    transform: translateY(-2px);
-}
-.nav-tabs .nav-link {
-    transition: all 0.3s ease;
-    border: none !important;
-}
-.nav-tabs .nav-link:hover:not(.active) {
-    background: rgba(233,69,96,0.15) !important;
-    color: var(--text-primary) !important;
-}
-.star-rating i { font-size: 1.3rem; margin-right: 2px; }
+    .book-hero-image:hover img {
+        transform: scale(1.05) !important;
+    }
+
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, var(--accent), #ff6b9d) !important;
+        box-shadow: 0 8px 25px rgba(233,69,96,0.3);
+        transform: translateY(-2px);
+    }
+
+    .nav-tabs .nav-link {
+        transition: all 0.3s ease;
+        border: none !important;
+    }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            background: rgba(233,69,96,0.15) !important;
+            color: var(--text-primary) !important;
+        }
+
+    .btn-wishlist-active {
+        background: rgba(233,69,96,0.15);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        border-radius: 16px;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-wishlist-active:hover {
+            background: rgba(233,69,96,0.25);
+            color: var(--accent);
+        }
 </style>
+
+<script>
+    function toggleWishlist(bookId) {
+        const btn   = document.getElementById('wishlistBtn');
+        const icon  = document.getElementById('wishlistIcon');
+        const text  = document.getElementById('wishlistText');
+        const toast = document.getElementById('wishlistToast');
+
+        btn.disabled = true;
+
+        fetch('/Wishlist/Toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector(
+                    'input[name="__RequestVerificationToken"]')?.value ?? ''
+            },
+            body: 'bookId=' + bookId
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (data.added) {
+                    icon.className = 'bi bi-heart-fill me-2';
+                    text.textContent = 'Remove from Wishlist';
+                    btn.className = 'btn btn-wishlist-active fs-6 py-3 rounded-3 fw-bold';
+                    showToast(toast, '❤️ Added to your wishlist!', '#10b981');
+                } else {
+                    icon.className = 'bi bi-heart me-2';
+                    text.textContent = 'Add to Wishlist';
+                    btn.className = 'btn btn-glass fs-6 py-3 rounded-3 fw-bold';
+                    showToast(toast, 'Removed from wishlist', '#b0b3b8');
+                }
+            } else {
+                showToast(toast, 'Please log in first', '#e94560');
+            }
+            btn.disabled = false;
+        })
+        .catch(() => {
+            showToast(toast, 'Something went wrong', '#e94560');
+            btn.disabled = false;
+        });
+    }
+
+    function showToast(el, msg, color) {
+        el.textContent      = msg;
+        el.style.color      = color;
+        el.style.background = color + '18';
+        el.style.border     = '1px solid ' + color + '44';
+        el.style.display    = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+</script>
