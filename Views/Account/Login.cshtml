@@ -5,7 +5,7 @@
 <div class="login-wrapper">
     <div class="login-card fade-in-up">
 
-        <!-- LOGO - matches navbar exactly -->
+        <!-- LOGO -->
         <div class="text-center mb-4">
             <a asp-controller="Books" asp-action="Index" class="login-logo">
                 📚 Book<span>Store</span>
@@ -20,7 +20,8 @@
 
         @if (ViewBag.Error != null)
         {
-            <div class="alert alert-danger bs-alert mb-4" style="border-radius:16px; padding: 0.9rem 1.2rem; font-size:0.9rem;">
+            <div class="alert alert-danger bs-alert mb-4"
+                 style="border-radius:16px; padding:0.9rem 1.2rem; font-size:0.9rem;">
                 <i class="bi bi-exclamation-circle-fill me-2"></i>@ViewBag.Error
             </div>
         }
@@ -47,7 +48,8 @@
                        placeholder="••••••••" required />
                 <button type="button"
                         onclick="togglePass()"
-                        style="position:absolute;right:14px;bottom:14px;background:none;border:none;padding:0;cursor:pointer;">
+                        style="position:absolute;right:14px;bottom:14px;
+                    background:none;border:none;padding:0;cursor:pointer;">
                     <i id="eyeIcon" class="bi bi-eye text-secondary"></i>
                 </button>
             </div>
@@ -64,7 +66,7 @@
             <span class="text-secondary" style="font-size:0.9rem;">New to BookStore?</span>
             <a asp-controller="Account" asp-action="Register"
                    class="ms-1 fw-bold text-decoration-none"
-                   style="color: var(--accent); font-size:0.9rem;">
+                   style="color:var(--accent);font-size:0.9rem;">
                 Create Account
             </a>
         </div>
@@ -92,21 +94,27 @@
         box-shadow: 0 24px 60px rgba(0,0,0,0.4);
     }
 
-    /* Logo — same style as navbar */
+    /* ✅ FIXED: no gradient, white + red accent like navbar */
     .login-logo {
         font-family: 'Playfair Display', serif;
         font-size: 36px;
         font-weight: 700;
-        background: linear-gradient(135deg, #ffffff, #e94560);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #ffffff;
         text-decoration: none;
         letter-spacing: -0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
+        .login-logo:hover {
+            color: #ffffff;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+
         .login-logo span {
-            /* inherited from gradient — no extra style needed */
+            color: #e94560;
         }
 
     .login-divider {

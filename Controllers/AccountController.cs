@@ -40,32 +40,75 @@ namespace BookStoreApp.Controllers
 
         // ── Register POST ─────────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Register(string name, string email,
-                                                   string password, IFormFile? profileImage)
+        public async Task<IActionResult> Register(
+            string name,
+            string email,
+            string password,
+            string? confirmPassword,
+            IFormFile? profileImage)
         {
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
+            // ── 1. Empty field check ──────────────────────────────────────────
+            if (string.IsNullOrWhiteSpace(name))
             {
-                ViewBag.Error = "All fields are required.";
+                ViewBag.Error = "Full name is required.";
                 return View();
             }
 
-            if (_db.Users.Any(u => u.Email == email.Trim().ToLower()))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                ViewBag.Error = "An account with that email already exists.";
+                ViewBag.Error = "Email address is required.";
                 return View();
             }
 
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                ViewBag.Error = "Password is required.";
+                return View();
+            }
+
+            // ── 2. Password minimum length ────────────────────────────────────
+            if (password.Length < 6)
+            {
+                ViewBag.Error = "Password must be at least 6 characters.";
+                return View();
+            }
+
+            // ── 3. Password match check ───────────────────────────────────────
+            if (password != confirmPassword)
+            {
+                ViewBag.Error = "Passwords do not match. Please try again.";
+                return View();
+            }
+
+            // ── 4. Duplicate email check ──────────────────────────────────────
+            bool emailExists = _db.Users.Any(u =>
+                u.Email == email.Trim().ToLower());
+
+            if (emailExists)
+            {
+                ViewBag.Error = "An account with that email already exists. Please sign in instead.";
+                return View();
+            }
+
+            // ── 5. Profile image upload ───────────────────────────────────────
             string? fileName = null;
             if (profileImage != null && profileImage.Length > 0)
             {
                 var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
                 var ext = Path.GetExtension(profileImage.FileName).ToLower();
+
                 if (!allowed.Contains(ext))
                 {
                     ViewBag.Error = "Profile image must be jpg, png, gif, or webp.";
                     return View();
                 }
+
+                if (profileImage.Length > 5 * 1024 * 1024)
+                {
+                    ViewBag.Error = "Profile image must be smaller than 5MB.";
+                    return View();
+                }
+
                 fileName = Guid.NewGuid().ToString() + ext;
                 var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
@@ -73,6 +116,7 @@ namespace BookStoreApp.Controllers
                 await profileImage.CopyToAsync(stream);
             }
 
+            // ── 6. Create user ────────────────────────────────────────────────
             var user = new Users
             {
                 Name = name.Trim(),
@@ -86,7 +130,7 @@ namespace BookStoreApp.Controllers
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Account created! You start with ₱1,000.00 wallet balance. Please sign in.";
+            TempData["Success"] = $"Welcome, {user.Name}! Your account has been created with ₱1,000.00 starting balance.";
             return RedirectToAction("Login");
         }
 
@@ -113,12 +157,12 @@ namespace BookStoreApp.Controllers
 
             if (user == null)
             {
-                ViewBag.Error = "Incorrect email or password.";
+                ViewBag.Error = "Incorrect email or password. Please try again.";
                 return View();
             }
 
             SetSession(user);
-            TempData["Success"] = $"Welcome back, {user.Name}!";
+            TempData["Success"] = $"Welcome back, {user.Name}! 👋";
             return RedirectToAction("Index", "Books");
         }
 
@@ -126,7 +170,7 @@ namespace BookStoreApp.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            TempData["Success"] = "You have been logged out.";
+            TempData["Success"] = "You have been logged out successfully.";
             return RedirectToAction("Login");
         }
 
@@ -145,26 +189,21 @@ namespace BookStoreApp.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Real transaction data
             var transactions = _db.Transactions
                 .Include(t => t.Book)
                 .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.TransactionDate)
                 .ToList();
 
-            // Real wishlist data
             var wishlist = _db.Wishlists
                 .Include(w => w.Book)
                 .Where(w => w.UserId == userId)
                 .OrderByDescending(w => w.AddedDate)
                 .ToList();
 
-            // Books owned = sum of all quantities purchased
-            var booksOwned = transactions.Sum(t => t.Quantity);
-
             ViewBag.Transactions = transactions;
             ViewBag.Wishlist = wishlist;
-            ViewBag.BooksOwned = booksOwned;
+            ViewBag.BooksOwned = transactions.Sum(t => t.Quantity);
 
             return View(user);
         }
@@ -186,9 +225,12 @@ namespace BookStoreApp.Controllers
 
         // ── Edit POST ─────────────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Edit(string name, string email,
-                                              string? newPassword, string? confirmPassword,
-                                              IFormFile? profileImage)
+        public async Task<IActionResult> Edit(
+            string name,
+            string email,
+            string? newPassword,
+            string? confirmPassword,
+            IFormFile? profileImage)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login");
@@ -210,11 +252,18 @@ namespace BookStoreApp.Controllers
 
             if (!string.IsNullOrWhiteSpace(newPassword))
             {
+                if (newPassword.Length < 6)
+                {
+                    ViewBag.Error = "New password must be at least 6 characters.";
+                    return View(user);
+                }
+
                 if (newPassword != confirmPassword)
                 {
                     ViewBag.Error = "New password and confirm password do not match.";
                     return View(user);
                 }
+
                 user.Password = newPassword;
             }
 
@@ -222,6 +271,7 @@ namespace BookStoreApp.Controllers
             {
                 var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
                 var ext = Path.GetExtension(profileImage.FileName).ToLower();
+
                 if (!allowed.Contains(ext))
                 {
                     ViewBag.Error = "Profile image must be jpg, png, gif, or webp.";
@@ -271,6 +321,7 @@ namespace BookStoreApp.Controllers
 
         // ── Reload Wallet POST ────────────────────────────────────────────────
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReloadWallet(decimal amount)
         {
             if (!IsLoggedIn()) return RedirectToAction("Login");

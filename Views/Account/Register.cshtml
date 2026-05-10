@@ -7,7 +7,7 @@
 
         <!-- LOGO -->
         <div class="text-center mb-4">
-            <a asp-controller="Books" asp-action="Login" class="login-logo">
+            <a asp-controller="Books" asp-action="Index" class="login-logo">
                 📚 Book<span>Store</span>
             </a>
             <p class="text-secondary mt-2 mb-0" style="font-size:0.95rem;">
@@ -18,19 +18,19 @@
         <!-- DIVIDER -->
         <div class="login-divider mb-4"></div>
 
+        <!-- SERVER ERROR -->
         @if (ViewBag.Error != null)
         {
-            <div class="alert alert-danger bs-alert mb-4"
-                 style="border-radius:16px; padding:0.9rem 1.2rem; font-size:0.9rem;">
+            <div class="reg-alert reg-alert-error mb-4">
                 <i class="bi bi-exclamation-circle-fill me-2"></i>@ViewBag.Error
             </div>
         }
 
         <form method="post" action="/Account/Register"
               enctype="multipart/form-data"
-              autocomplete="off">
+              autocomplete="off"
+              onsubmit="return validateForm()">
 
-            <!-- hidden fields to block browser autofill -->
             <input type="text"     style="display:none" />
             <input type="password" style="display:none" />
 
@@ -41,10 +41,11 @@
                     <label class="login-label">
                         <i class="bi bi-person me-1"></i>Full Name
                     </label>
-                    <input type="text" name="name"
+                    <input type="text" name="name" id="regName"
                            class="form-control login-input"
                            placeholder="e.g. Juan dela Cruz"
                            autocomplete="off" required />
+                    <small id="nameMsg" class="field-msg"></small>
                 </div>
 
                 <!-- EMAIL -->
@@ -52,10 +53,13 @@
                     <label class="login-label">
                         <i class="bi bi-envelope me-1"></i>Email Address
                     </label>
-                    <input type="email" name="email"
+                    <input type="email" name="email" id="regEmail"
                            class="form-control login-input"
                            placeholder="you@example.com"
-                           autocomplete="off" required />
+                           autocomplete="off"
+                           oninput="validateEmail()"
+                           required />
+                    <small id="emailMsg" class="field-msg"></small>
                 </div>
 
                 <!-- PASSWORD -->
@@ -68,18 +72,18 @@
                                class="form-control login-input pe-5"
                                placeholder="••••••••"
                                autocomplete="new-password"
-                               oninput="checkStrength(this.value)"
+                               oninput="checkStrength(this.value); checkMatch();"
                                required />
                         <button type="button" class="pwd-toggle"
                                 onclick="togglePass('regPassword','eyeReg')">
                             <i id="eyeReg" class="bi bi-eye text-secondary"></i>
                         </button>
                     </div>
-                    <!-- Password strength bar -->
+                    <!-- Strength bar -->
                     <div class="strength-bar mt-2">
                         <div id="strengthFill" class="strength-fill"></div>
                     </div>
-                    <small id="strengthText" class="text-secondary" style="font-size:0.75rem;"></small>
+                    <small id="strengthText" class="field-msg"></small>
                 </div>
 
                 <!-- CONFIRM PASSWORD -->
@@ -99,7 +103,7 @@
                             <i id="eyeConfirm" class="bi bi-eye text-secondary"></i>
                         </button>
                     </div>
-                    <small id="matchText" style="font-size:0.75rem;"></small>
+                    <small id="matchText" class="field-msg"></small>
                 </div>
 
                 <!-- PROFILE PICTURE -->
@@ -108,10 +112,8 @@
                         <i class="bi bi-image me-1"></i>Profile Picture
                         <span class="text-secondary fw-normal ms-1">(optional)</span>
                     </label>
-
                     <div class="upload-area" id="uploadArea"
                          onclick="document.getElementById('profileInput').click()">
-                        <!-- Preview -->
                         <div id="uploadPlaceholder">
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2 d-block"></i>
                             <p class="text-secondary mb-1" style="font-size:0.9rem;">
@@ -124,18 +126,21 @@
                         <div id="uploadPreview" style="display:none;" class="text-center">
                             <img id="imgPreview"
                                  class="rounded-circle mb-2"
-                                 style="width:80px;height:80px;object-fit:cover;border:3px solid var(--accent);"
+                                 style="width:80px;height:80px;object-fit:cover;
+                                        border:3px solid var(--accent);"
                                  src="#" alt="Preview" />
-                            <p id="imgName" class="text-secondary mb-0" style="font-size:0.82rem;"></p>
+                            <p id="imgName" class="text-secondary mb-0"
+                               style="font-size:0.82rem;"></p>
                             <button type="button"
                                     class="btn btn-sm mt-2"
-                                    style="font-size:0.78rem;color:var(--accent);background:none;border:1px solid var(--accent);border-radius:8px;"
+                                    style="font-size:0.78rem;color:var(--accent);
+                                           background:none;border:1px solid var(--accent);
+                                           border-radius:8px;"
                                     onclick="clearImage(event)">
                                 Remove
                             </button>
                         </div>
                     </div>
-
                     <input type="file" name="profileImage" id="profileInput"
                            hidden accept="image/*"
                            onchange="previewImage(this)" />
@@ -146,20 +151,28 @@
                     <div class="d-flex align-items-start gap-2">
                         <input type="checkbox" id="terms"
                                class="form-check-input mt-1"
-                               style="background:var(--bg-glass);border-color:var(--glass-border);min-width:16px;"
+                               style="background:var(--bg-glass);
+                                      border-color:var(--glass-border);
+                                      min-width:16px;"
                                required />
-                        <label for="terms" class="text-secondary" style="font-size:0.85rem; cursor:pointer;">
+                        <label for="terms" class="text-secondary"
+                               style="font-size:0.85rem;cursor:pointer;">
                             I agree to the
-                            <span style="color:var(--accent);font-weight:600;">Terms of Service</span>
+                            <span style="color:var(--accent);font-weight:600;">
+                                Terms of Service
+                            </span>
                             and
-                            <span style="color:var(--accent);font-weight:600;">Privacy Policy</span>
+                            <span style="color:var(--accent);font-weight:600;">
+                                Privacy Policy
+                            </span>
                         </label>
                     </div>
                 </div>
 
                 <!-- SUBMIT -->
                 <div class="col-12 mt-2">
-                    <button type="submit" class="btn btn-premium w-100 py-3 fw-bold">
+                    <button type="submit" id="submitBtn"
+                            class="btn btn-premium w-100 py-3 fw-bold">
                         <i class="bi bi-person-plus me-2"></i>Create Account
                     </button>
                 </div>
@@ -193,7 +206,7 @@
 
     .register-card {
         width: 100%;
-        max-width: 560px;
+        max-width: 580px;
         background: rgba(255,255,255,0.05);
         backdrop-filter: blur(24px) saturate(180%);
         border: 1px solid rgba(255,255,255,0.08);
@@ -202,17 +215,20 @@
         box-shadow: 0 24px 60px rgba(0,0,0,0.4);
     }
 
+    /* ✅ FIXED logo — white + red accent, no gradient */
     .login-logo {
         font-family: 'Playfair Display', serif;
         font-size: 36px;
         font-weight: 700;
-        background: linear-gradient(135deg, #ffffff, #e94560);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #ffffff;
         text-decoration: none;
         letter-spacing: -0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
+    .login-logo:hover { color: #ffffff; text-decoration: none; opacity: 0.9; }
+    .login-logo span  { color: #e94560; }
 
     .login-divider {
         height: 1px;
@@ -239,9 +255,7 @@
         font-size: 0.95rem;
         transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
     }
-
     .login-input::placeholder { color: rgba(255,255,255,0.2) !important; }
-
     .login-input:focus {
         background: rgba(255,255,255,0.09) !important;
         border-color: var(--accent) !important;
@@ -249,41 +263,29 @@
         transform: scale(1.01);
         outline: none !important;
     }
+    .login-input.is-valid   { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16,185,129,0.15) !important; }
+    .login-input.is-invalid { border-color: #e94560 !important; box-shadow: 0 0 0 3px rgba(233,69,96,0.15) !important; }
 
-    .login-input.is-valid {
-        border-color: #10b981 !important;
-        box-shadow: 0 0 0 4px rgba(16,185,129,0.2) !important;
-    }
+    /* Field messages */
+    .field-msg { font-size: 0.75rem; display: block; margin-top: 4px; min-height: 16px; }
 
-    .login-input.is-invalid {
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 4px rgba(233,69,96,0.2) !important;
-    }
-
-    /* Password toggle button */
+    /* Password toggle */
     .pwd-toggle {
-        position: absolute;
-        right: 14px;
-        top: 50%;
+        position: absolute; right: 14px; top: 50%;
         transform: translateY(-50%);
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        z-index: 10;
+        background: none; border: none; padding: 0;
+        cursor: pointer; z-index: 10;
     }
 
-    /* Password strength */
+    /* Strength bar */
     .strength-bar {
         height: 4px;
         background: rgba(255,255,255,0.08);
         border-radius: 4px;
         overflow: hidden;
     }
-
     .strength-fill {
-        height: 100%;
-        width: 0%;
+        height: 100%; width: 0%;
         border-radius: 4px;
         transition: width 0.4s ease, background 0.4s ease;
     }
@@ -298,13 +300,30 @@
         transition: border-color 0.25s, background 0.25s;
         background: rgba(255,255,255,0.03);
     }
-
     .upload-area:hover {
         border-color: var(--accent);
         background: rgba(233,69,96,0.05);
     }
 
-    /* Form check */
+    /* Alert */
+    .reg-alert {
+        border-radius: 14px;
+        padding: 0.9rem 1.2rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+    }
+    .reg-alert-error {
+        background: rgba(233,69,96,0.1);
+        border: 1px solid rgba(233,69,96,0.3);
+        color: #e94560;
+    }
+    .reg-alert-success {
+        background: rgba(16,185,129,0.1);
+        border: 1px solid rgba(16,185,129,0.25);
+        color: #10b981;
+    }
+
     .form-check-input:checked {
         background-color: var(--accent) !important;
         border-color: var(--accent) !important;
@@ -312,109 +331,189 @@
 
     @@media (max-width: 576px) {
         .register-card { padding: 2rem 1.5rem; }
-        .login-logo { font-size: 28px; }
+        .login-logo    { font-size: 28px; }
     }
 </style>
 
 <script>
-    // Toggle password visibility
+    // ── Toggle password visibility ────────────────────────────────────────────
     function togglePass(fieldId, iconId) {
         const field = document.getElementById(fieldId);
         const icon  = document.getElementById(iconId);
-        if (field.type === 'password') {
-            field.type = 'text';
-            icon.classList.replace('bi-eye', 'bi-eye-slash');
-        } else {
-            field.type = 'password';
-            icon.classList.replace('bi-eye-slash', 'bi-eye');
-        }
+        field.type  = field.type === 'password' ? 'text' : 'password';
+        icon.classList.toggle('bi-eye');
+        icon.classList.toggle('bi-eye-slash');
     }
 
-    // Password strength checker
+    // ── Email format validation (client-side) ─────────────────────────────────
+    function validateEmail() {
+        const input = document.getElementById('regEmail');
+        const msg   = document.getElementById('emailMsg');
+        const val   = input.value.trim();
+        const re    = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+        if (val === '') {
+            input.classList.remove('is-valid', 'is-invalid');
+            msg.textContent = '';
+            return true;
+        }
+
+        if (!re.test(val)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            msg.textContent  = '✗ Please enter a valid email address';
+            msg.style.color  = '#e94560';
+            return false;
+        }
+
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+        msg.textContent = '✓ Looks good!';
+        msg.style.color = '#10b981';
+        return true;
+    }
+
+    // ── Password strength ─────────────────────────────────────────────────────
     function checkStrength(val) {
         const fill = document.getElementById('strengthFill');
         const text = document.getElementById('strengthText');
-        let strength = 0;
+        let score  = 0;
 
-        if (val.length >= 6)                        strength++;
-        if (val.length >= 10)                       strength++;
-        if (/[A-Z]/.test(val))                      strength++;
-        if (/[0-9]/.test(val))                      strength++;
-        if (/[^A-Za-z0-9]/.test(val))              strength++;
+        if (val.length >= 6)               score++;
+        if (val.length >= 10)              score++;
+        if (/[A-Z]/.test(val))             score++;
+        if (/[0-9]/.test(val))             score++;
+        if (/[^A-Za-z0-9]/.test(val))     score++;
 
         const levels = [
-            { pct: '0%',   color: 'transparent',  label: '' },
-            { pct: '25%',  color: '#e94560',       label: 'Weak' },
-            { pct: '50%',  color: '#f97316',       label: 'Fair' },
-            { pct: '75%',  color: '#eab308',       label: 'Good' },
-            { pct: '90%',  color: '#10b981',       label: 'Strong' },
-            { pct: '100%', color: '#10b981',       label: '💪 Very Strong' },
+            { pct: '0%',   color: 'transparent', label: '' },
+            { pct: '25%',  color: '#e94560',      label: 'Weak' },
+            { pct: '50%',  color: '#f97316',      label: 'Fair' },
+            { pct: '75%',  color: '#eab308',      label: 'Good' },
+            { pct: '90%',  color: '#10b981',      label: 'Strong' },
+            { pct: '100%', color: '#10b981',      label: '💪 Very Strong' },
         ];
 
-        const level = levels[Math.min(strength, 5)];
-        fill.style.width      = level.pct;
-        fill.style.background = level.color;
-        text.textContent      = level.label;
-        text.style.color      = level.color;
-
-        // also trigger match check if confirm is filled
-        checkMatch();
+        const level          = levels[Math.min(score, 5)];
+        fill.style.width     = level.pct;
+        fill.style.background= level.color;
+        text.textContent     = level.label;
+        text.style.color     = level.color;
     }
 
-    // Password match checker
+    // ── Password match check ──────────────────────────────────────────────────
     function checkMatch() {
         const pwd     = document.getElementById('regPassword').value;
         const confirm = document.getElementById('regConfirm');
-        const text    = document.getElementById('matchText');
+        const msg     = document.getElementById('matchText');
 
         if (confirm.value === '') {
             confirm.classList.remove('is-valid', 'is-invalid');
-            text.textContent = '';
-            return;
+            msg.textContent = '';
+            return true;
         }
 
         if (pwd === confirm.value) {
             confirm.classList.add('is-valid');
             confirm.classList.remove('is-invalid');
-            text.textContent  = '✓ Passwords match';
-            text.style.color  = '#10b981';
+            msg.textContent = '✓ Passwords match';
+            msg.style.color = '#10b981';
+            return true;
         } else {
             confirm.classList.add('is-invalid');
             confirm.classList.remove('is-valid');
-            text.textContent  = '✗ Passwords do not match';
-            text.style.color  = '#e94560';
+            msg.textContent = '✗ Passwords do not match';
+            msg.style.color = '#e94560';
+            return false;
         }
     }
 
-    // Image preview
+    // ── Full form validation before submit ────────────────────────────────────
+    function validateForm() {
+        const name     = document.getElementById('regName').value.trim();
+        const email    = document.getElementById('regEmail').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const confirm  = document.getElementById('regConfirm').value;
+        const terms    = document.getElementById('terms').checked;
+
+        // Name check
+        if (name === '') {
+            showFormError('Full name is required.');
+            return false;
+        }
+
+        // Email check
+        if (!validateEmail()) {
+            showFormError('Please enter a valid email address.');
+            return false;
+        }
+
+        // Password length
+        if (password.length < 6) {
+            showFormError('Password must be at least 6 characters.');
+            document.getElementById('regPassword').classList.add('is-invalid');
+            return false;
+        }
+
+        // Password match — BLOCKS SUBMIT if mismatch
+        if (password !== confirm) {
+            showFormError('Passwords do not match. Please check and try again.');
+            document.getElementById('regConfirm').classList.add('is-invalid');
+            document.getElementById('regConfirm').focus();
+            return false;
+        }
+
+        // Terms
+        if (!terms) {
+            showFormError('You must agree to the Terms of Service to continue.');
+            return false;
+        }
+
+        return true; // all good — allow submit
+    }
+
+    function showFormError(msg) {
+        // Remove old error if exists
+        const old = document.getElementById('formErrorBox');
+        if (old) old.remove();
+
+        const box = document.createElement('div');
+        box.id = 'formErrorBox';
+        box.className = 'reg-alert reg-alert-error mb-3';
+        box.innerHTML = '<i class="bi bi-exclamation-circle-fill me-2"></i>' + msg;
+
+        const form = document.querySelector('form');
+        form.insertBefore(box, form.firstChild);
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ── Image preview ─────────────────────────────────────────────────────────
     function previewImage(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
-
             if (file.size > 5 * 1024 * 1024) {
                 alert('File too large — max 5MB');
                 input.value = '';
                 return;
             }
-
             const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('imgPreview').src = e.target.result;
-                document.getElementById('imgName').textContent = file.name;
+            reader.onload = e => {
+                document.getElementById('imgPreview').src          = e.target.result;
+                document.getElementById('imgName').textContent     = file.name;
                 document.getElementById('uploadPlaceholder').style.display = 'none';
-                document.getElementById('uploadPreview').style.display = 'block';
+                document.getElementById('uploadPreview').style.display     = 'block';
             };
             reader.readAsDataURL(file);
         }
     }
 
-    // Clear image
+    // ── Clear image ───────────────────────────────────────────────────────────
     function clearImage(e) {
         e.stopPropagation();
-        document.getElementById('profileInput').value = '';
-        document.getElementById('imgPreview').src = '#';
-        document.getElementById('imgName').textContent = '';
+        document.getElementById('profileInput').value              = '';
+        document.getElementById('imgPreview').src                  = '#';
+        document.getElementById('imgName').textContent             = '';
         document.getElementById('uploadPlaceholder').style.display = 'block';
-        document.getElementById('uploadPreview').style.display = 'none';
+        document.getElementById('uploadPreview').style.display     = 'none';
     }
 </script>

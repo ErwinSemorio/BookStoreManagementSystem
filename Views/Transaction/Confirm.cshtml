@@ -1,102 +1,287 @@
 ﻿@model BookStoreApp.Models.Book
 @{
     ViewData["Title"] = "Confirm Purchase";
-    var user = ViewBag.User as BookStoreApp.Models.Users;
-    int qty = ViewBag.Quantity as int? ?? 1;
-    decimal total = Model.Price * qty;
-    decimal wallet = user?.WalletBalance ?? 0m;
+    var user      = ViewBag.User as BookStoreApp.Models.Users;
+    int qty       = ViewBag.Quantity as int? ?? 1;
+    decimal total     = Model.Price * qty;
+    decimal wallet    = user?.WalletBalance ?? 0m;
     decimal remaining = wallet - total;
-    bool canAfford = wallet >= total;
+    decimal shortfall = total - wallet;
+    bool canAfford    = wallet >= total;
+
+    string imgUrl = Model.Title switch
+    {
+        "Harry Potter and the Sorcerer's Stone" => "/images/books/harry.jpg",
+        "The Alchemist"         => "/images/books/alchemist.jpg",
+        "Rich Dad Poor Dad"     => "/images/books/richdad.jpg",
+        "To Kill a Mockingbird" => "/images/books/mockingbird.jpg",
+        "The Great Gatsby"      => "/images/books/gatsby.jpg",
+        "1984"                  => "/images/books/1984.jpg",
+        "Atomic Habits"         => "/images/books/atomic.jpg",
+        "The 48 Laws of Power"  => "/images/books/48laws.jpg",
+        _ => !string.IsNullOrEmpty(Model.CoverImage)
+                ? $"/images/books/{Model.CoverImage}" : ""
+    };
 }
 
-<div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
-    <div class="glass-card shadow-lg" style="width: 100%; max-width: 520px;">
-        <div class="card-body p-5">
-            <!-- Header -->
-            <div class="text-center mb-5 fade-in-up">
-                <div class="mb-4">
-                    <i class="bi bi-credit-card-2-front display-3 text-success"></i>
-                </div>
-                <h2 class="fw-bold mb-2 text-white">Confirm Purchase</h2>
-                <p class="text-secondary lead mb-0">Review your order details</p>
-            </div>
+<div class="container py-4">
 
-            <!-- Book Preview -->
-            <div class="glass-card p-4 mb-5 fade-in-up" data-hover>
-                <div class="row align-items-center">
-                    <div class="col-3">
-                        <div class="bg-glass rounded-3 p-3 d-flex align-items-center justify-content-center" style="height: 100px;">
-                            @if (!string.IsNullOrEmpty(Model.CoverImage))
-                            {
-                                <img src="/images/books/@Model.CoverImage" class="w-100 h-100 rounded-2" style="object-fit: cover;" />
-                            }
-                            else
-                            {
-                                <i class="bi bi-book fs-1 opacity-50"></i>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-9 ps-4">
-                        <h5 class="fw-bold mb-2">@Model.Title</h5>
-                        <p class="text-secondary mb-2">@Model.Author</p>
-                        <span class="badge bg-success bg-opacity-20 text-success px-3 py-2">Qty: @qty</span>
-                    </div>
-                </div>
-            </div>
+    <!-- Back -->
+    <div class="mb-4">
+        <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.Id"
+           style="color:rgba(255,255,255,0.45);text-decoration:none;font-size:0.88rem;
+                  display:inline-flex;align-items:center;gap:6px;transition:color 0.2s;"
+           onmouseover="this.style.color='#fff'"
+           onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+            <i class="bi bi-arrow-left"></i> Back to Book
+        </a>
+    </div>
 
-            <!-- Financial Breakdown -->
-            <div class="glass-card p-4 mb-5 fade-in-up" data-hover>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <small class="text-secondary d-block mb-1">Current Balance</small>
-                        <h4 class="text-white fw-bold mb-0">₱@wallet.ToString("N2")</h4>
-                    </div>
-                    <div class="col-6 text-end">
-                        <small class="text-secondary d-block mb-1">Order Total</small>
-                        <h4 class="text-danger fw-bold mb-0">₱@total.ToString("N2")</h4>
-                    </div>
-                    <div class="col-12">
-                        <hr class="border-secondary border-opacity-25 my-3">
-                    </div>
-                    <div class="col-6">
-                        <small class="text-secondary d-block mb-1">New Balance</small>
-                        <h3 class="fw-bold @(canAfford ? "text-success" : "text-danger") mb-0">@remaining.ToString("N2")</h3>
-                    </div>
-                </div>
-            </div>
+    <!-- Page Title -->
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1" style="font-family:'Playfair Display',serif;">Confirm Purchase</h2>
+        <p style="color:rgba(255,255,255,0.4);font-size:0.92rem;margin:0;">
+            Review your order carefully before completing the transaction.
+        </p>
+    </div>
 
-            @if (!canAfford)
-            {
-                <div class="alert alert-danger glass-card border-0 mb-4 fade-in-up">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>Insufficient Balance</strong><br>
-                    <small>You need ₱@(total - wallet).ToString("N2") more to complete this purchase.</small>
-                </div>
-            }
+    <div class="row g-4">
 
-            <!-- Action Buttons -->
-            <div class="d-grid gap-3 fade-in-up">
-                <form asp-action="PlaceOrder" method="post">
-                    <input type="hidden" name="bookId" value="@Model.Id" />
-                    <input type="hidden" name="quantity" value="@qty" />
-                    <button type="submit" class="btn @(canAfford ? "btn-premium" : "btn-glass") @(canAfford ? "" : "opacity-50")" @(canAfford ? "" : "disabled")>
-                        @if (canAfford)
+        <!-- LEFT: Book + Order Summary -->
+        <div class="col-lg-7">
+
+            <!-- Book Card -->
+            <div class="glass-card p-4 mb-4">
+                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+                            letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:1rem;">
+                    📖 Item Ordered
+                </div>
+                <div class="d-flex gap-4 align-items-center">
+                    <!-- Cover -->
+                    <div style="width:90px;height:120px;border-radius:10px;overflow:hidden;
+                                flex-shrink:0;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                        @if (!string.IsNullOrEmpty(imgUrl))
                         {
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            <span>Confirm & Purchase</span>
+                            <img src="@imgUrl" style="width:100%;height:100%;object-fit:cover;" />
                         }
                         else
                         {
-                            <i class="bi bi-wallet2 me-2"></i>
-                            <span>Top Up Wallet</span>
+                            <div style="width:100%;height:100%;
+                                        background:linear-gradient(135deg,#1e3a8a,#3b82f6);
+                                        display:flex;align-items:center;justify-content:center;
+                                        font-size:2rem;">📖</div>
                         }
-                    </button>
-                </form>
+                    </div>
+                    <!-- Info -->
+                    <div style="flex:1;">
+                        <h5 style="color:#fff;font-weight:700;margin-bottom:4px;
+                                   font-family:'Playfair Display',serif;">
+                            @Model.Title
+                        </h5>
+                        <p style="color:rgba(255,255,255,0.45);font-size:0.88rem;margin-bottom:16px;">
+                            by @Model.Author
+                        </p>
+                        <!-- Qty + Price clearly visible -->
+                        <div class="d-flex gap-3 flex-wrap">
+                            <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);
+                                        border-radius:10px;padding:8px 16px;text-align:center;">
+                                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);
+                                            text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;">
+                                    Quantity
+                                </div>
+                                <div style="font-size:1.3rem;font-weight:800;color:#22c55e;">
+                                    @qty
+                                </div>
+                            </div>
+                            <div style="background:rgba(233,69,96,0.1);border:1px solid rgba(233,69,96,0.25);
+                                        border-radius:10px;padding:8px 16px;text-align:center;">
+                                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);
+                                            text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;">
+                                    Unit Price
+                                </div>
+                                <div style="font-size:1.3rem;font-weight:800;color:#e94560;">
+                                    ₱@Model.Price.ToString("N2")
+                                </div>
+                            </div>
+                            <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);
+                                        border-radius:10px;padding:8px 16px;text-align:center;">
+                                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);
+                                            text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;">
+                                    Subtotal
+                                </div>
+                                <div style="font-size:1.3rem;font-weight:800;color:#a78bfa;">
+                                    ₱@total.ToString("N2")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order breakdown -->
+            <div class="glass-card p-4">
+                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+                            letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:1rem;">
+                    💳 Payment Breakdown
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span style="color:rgba(255,255,255,0.5);font-size:0.92rem;">
+                        Unit Price × @qty
+                    </span>
+                    <span style="color:#fff;font-weight:600;">₱@total.ToString("N2")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span style="color:rgba(255,255,255,0.5);font-size:0.92rem;">
+                        Wallet Balance
+                    </span>
+                    <span style="color:#fff;font-weight:600;">₱@wallet.ToString("N2")</span>
+                </div>
+
+                <div style="height:1px;background:rgba(255,255,255,0.08);margin:1rem 0;"></div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span style="color:#fff;font-weight:700;font-size:1rem;">
+                        Balance After Purchase
+                    </span>
+                    <span style="font-size:1.4rem;font-weight:800;
+                                 color:@(canAfford ? "#22c55e" : "#e94560");">
+                        @(canAfford
+                            ? "₱" + remaining.ToString("N2")
+                            : "−₱" + shortfall.ToString("N2"))
+                    </span>
+                </div>
+
+                @if (!canAfford)
+                {
+                    <div style="margin-top:1rem;background:rgba(233,69,96,0.08);
+                                border:1px solid rgba(233,69,96,0.2);border-radius:12px;
+                                padding:1rem 1.25rem;display:flex;gap:12px;align-items:flex-start;">
+                        <i class="bi bi-exclamation-triangle-fill mt-1"
+                           style="color:#e94560;flex-shrink:0;font-size:1rem;"></i>
+                        <div>
+                            <div style="font-weight:700;color:#e94560;font-size:0.92rem;margin-bottom:4px;">
+                                Insufficient Balance
+                            </div>
+                            <div style="font-size:0.85rem;color:rgba(255,255,255,0.45);line-height:1.5;">
+                                You need <strong style="color:#e94560;">₱@shortfall.ToString("N2")</strong>
+                                more to complete this purchase. Please top up your wallet to proceed.
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Wallet + Actions -->
+        <div class="col-lg-5">
+
+            <!-- Wallet Status -->
+            <div class="glass-card p-4 mb-4"
+                 style="background:@(canAfford
+                    ? "linear-gradient(135deg,rgba(16,185,129,0.08),rgba(5,150,105,0.05))"
+                    : "linear-gradient(135deg,rgba(233,69,96,0.08),rgba(199,54,82,0.05))");
+                 border-color:@(canAfford ? "rgba(34,197,94,0.2)" : "rgba(233,69,96,0.2)");">
+
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;">
+                    <div style="width:42px;height:42px;border-radius:10px;flex-shrink:0;
+                                background:@(canAfford ? "rgba(34,197,94,0.15)" : "rgba(233,69,96,0.15)");
+                                display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-wallet2"
+                           style="font-size:1.1rem;color:@(canAfford ? "#22c55e" : "#e94560");"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);
+                                    text-transform:uppercase;letter-spacing:0.8px;">
+                            Your Wallet
+                        </div>
+                        <div style="font-size:1.5rem;font-weight:800;
+                                    color:@(canAfford ? "#22c55e" : "#e94560");line-height:1.1;">
+                            ₱@wallet.ToString("N2")
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status indicator -->
+                <div style="display:flex;align-items:center;gap:8px;
+                            padding:8px 14px;border-radius:8px;
+                            background:@(canAfford ? "rgba(34,197,94,0.1)" : "rgba(233,69,96,0.1)");">
+                    <div style="width:8px;height:8px;border-radius:50%;
+                                background:@(canAfford ? "#22c55e" : "#e94560");
+                                animation: pulse-dot 1.5s infinite;"></div>
+                    <span style="font-size:0.82rem;font-weight:600;
+                                 color:@(canAfford ? "#22c55e" : "#e94560");">
+                        @(canAfford ? "Ready to purchase" : "Insufficient balance")
+                    </span>
+                </div>
+            </div>
+
+            <!-- Order Total Box -->
+            <div class="glass-card p-4 mb-4">
+                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+                            letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:0.75rem;">
+                    Order Total
+                </div>
+                <div style="font-size:2.2rem;font-weight:800;color:#e94560;line-height:1;">
+                    ₱@total.ToString("N2")
+                </div>
+                <div style="font-size:0.82rem;color:rgba(255,255,255,0.35);margin-top:4px;">
+                    @qty item@(qty > 1 ? "s" : "") × ₱@Model.Price.ToString("N2")
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                @if (canAfford)
+                {
+                    <form asp-action="PlaceOrder" method="post">
+                        <input type="hidden" name="bookId"   value="@Model.Id" />
+                        <input type="hidden" name="quantity" value="@qty" />
+                        <button type="submit" class="btn btn-premium w-100 fw-bold"
+                                style="padding:1rem;font-size:1rem;border-radius:14px;">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Confirm & Pay ₱@total.ToString("N2")
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a href="/Account/ReloadWallet"
+                       class="w-100 fw-bold text-decoration-none text-center"
+                       style="background:linear-gradient(135deg,#059669,#10b981);
+                              color:#fff;border-radius:14px;padding:1rem;
+                              font-size:1rem;display:block;
+                              box-shadow:0 8px 24px rgba(16,185,129,0.25);
+                              transition:opacity 0.2s;"
+                       onmouseover="this.style.opacity='0.88'"
+                       onmouseout="this.style.opacity='1'">
+                        <i class="bi bi-wallet2 me-2"></i>
+                        Top Up — Need ₱@shortfall.ToString("N2")
+                    </a>
+                }
+
                 <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.Id"
-                       class="btn btn-glass text-decoration-none">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Book
+                   class="btn btn-glass w-100 fw-bold text-decoration-none text-center"
+                   style="padding:1rem;font-size:0.95rem;border-radius:14px;">
+                    <i class="bi bi-arrow-left me-2"></i>Cancel
                 </a>
             </div>
+
+            <!-- Security note -->
+            <div class="text-center mt-4" style="font-size:0.78rem;color:rgba(255,255,255,0.25);">
+                <i class="bi bi-shield-lock me-1"></i>
+                Secured transaction · Wallet deducted instantly
+            </div>
+
         </div>
     </div>
 </div>
+
+<style>
+    @@keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.5; transform: scale(1.4); }
+    }
+</style>

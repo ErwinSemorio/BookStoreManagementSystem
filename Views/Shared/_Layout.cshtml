@@ -67,22 +67,28 @@
         }
 
         /* Logo */
-        .bs-logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 30px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ffffff, #e94560);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
+            .bs-logo {
+                font-family: 'Playfair Display', serif;
+                font-size: 30px;
+                font-weight: 700;
+                color: #ffffff;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+            }
 
-        .bs-logo:hover {
-            transform: scale(1.06);
-            opacity: 0.9;
-        }
+            .bs-logo:hover {
+                transform: scale(1.06);
+                opacity: 0.9;
+                color: #ffffff;
+                text-decoration: none;
+            }
+
+            .bs-logo .logo-accent {
+                color: #e94560;
+            }
 
         /* Nav links */
         .bs-nav-links a {
@@ -231,9 +237,9 @@
     <nav class="bs-navbar" id="navbar">
         <div class="bs-navbar-inner">
 
-            <a class="bs-logo" asp-controller="Books" asp-action="Index">
-                📚 Book<span style="-webkit-text-fill-color: inherit;">Store</span>
-            </a>
+                <a class="bs-logo" asp-controller="Books" asp-action="Index">
+            📚 Book<span class="logo-accent">Store</span>
+        </a>
 
             @{
                 var userName = Context.Session.GetString("UserName");

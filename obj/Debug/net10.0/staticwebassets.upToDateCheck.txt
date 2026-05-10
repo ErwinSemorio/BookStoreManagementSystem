@@ -1,6 +1,6 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
-wwwroot\images\66b9fbd7-383c-47cf-887e-a0de7fabfeb7.jpg
+wwwroot\images\86f92933-ae60-4242-bcf2-ea19e70e4eb4.jpg
 wwwroot\images\a9dc3eda-dbbf-42c5-9446-3daf607e72ea.png
 wwwroot\images\books\1984.jpg
 wwwroot\images\books\48laws.jpg
