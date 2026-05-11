@@ -18,10 +18,10 @@ namespace BookStoreApp.Models
         [Required]
         public int Quantity { get; set; } = 1;
 
-        [Column(TypeName = "decimal(18,2)")]
+        [Column(TypeName = "numeric(18,2)")]
         public decimal TotalAmount { get; set; }
 
-        public DateTime TransactionDate { get; set; } = DateTime.Now;
+        public DateTime TransactionDate { get; set; } = DateTime.UtcNow; // ✅ UTC for PostgreSQL
 
         [Required]
         public string Status { get; set; } = "Completed";

@@ -1,23 +1,28 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 using BookStoreApp.Data;
+using System.IO;
 
-public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+namespace BookStoreApp.Data
 {
-    public ApplicationDbContext CreateDbContext(string[] args)
+    public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
-        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        public ApplicationDbContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .Build();
+            // Reads connection string from appsettings.json at design time
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
 
-        optionsBuilder.UseSqlServer(
-            configuration.GetConnectionString("DefaultConnection"));
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-        return new ApplicationDbContext(optionsBuilder.Options);
+            optionsBuilder.UseNpgsql(connectionString); // ✅ PostgreSQL
+
+            return new ApplicationDbContext(optionsBuilder.Options);
+        }
     }
 }

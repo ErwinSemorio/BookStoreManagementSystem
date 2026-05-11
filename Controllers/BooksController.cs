@@ -55,8 +55,8 @@ namespace BookStoreApp.Controllers
             if (!string.IsNullOrWhiteSpace(searchString))
             {
                 booksQuery = booksQuery.Where(b =>
-                    b.Title.Contains(searchString) ||
-                    b.Author.Contains(searchString));
+    EF.Functions.ILike(b.Title, $"%{searchString}%") ||
+    EF.Functions.ILike(b.Author, $"%{searchString}%"));
             }
 
             var model = new DashboardViewModel

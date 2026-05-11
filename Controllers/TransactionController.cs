@@ -105,7 +105,7 @@ namespace BookStoreApp.Controllers
                         BookId = book.Id,
                         Quantity = quantity,
                         TotalAmount = totalAmount,
-                        TransactionDate = DateTime.Now,
+                        TransactionDate = DateTime.UtcNow, // ✅ Fixed for PostgreSQL
                         Status = "Completed"
                     };
 
@@ -118,10 +118,10 @@ namespace BookStoreApp.Controllers
                     TempData["Success"] = $"Purchase successful! You bought {quantity}x \"{book.Title}\" for ₱{totalAmount:N2}. Remaining balance: ₱{user.WalletBalance:N2}.";
                     return RedirectToAction("History");
                 }
-                catch
+                catch (Exception ex) // ✅ Now shows real error
                 {
                     dbTransaction.Rollback();
-                    TempData["Error"] = "Transaction failed. Please try again.";
+                    TempData["Error"] = $"Transaction failed: {ex.Message} {ex.InnerException?.Message}";
                     return RedirectToAction("Confirm", new { id = bookId, quantity });
                 }
             }
@@ -185,13 +185,13 @@ namespace BookStoreApp.Controllers
             // Summary rows
             sb.AppendLine();
             sb.AppendLine($",,,,,,");
-            sb.AppendLine($"Exported by,{user.Name},,,,{DateTime.Now:yyyy-MM-dd HH:mm},");
+            sb.AppendLine($"Exported by,{user.Name},,,,{DateTime.UtcNow:yyyy-MM-dd HH:mm},");
             sb.AppendLine($"Total Transactions,{history.Count},,,,");
             sb.AppendLine($"Total Spent,\"{history.Sum(t => t.TotalAmount):N2}\",,,,");
             sb.AppendLine($"Current Balance,\"{user.WalletBalance:N2}\",,,,");
 
             var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
-            var fileName = $"BookStore_Transactions_{user.Name?.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.csv";
+            var fileName = $"BookStore_Transactions_{user.Name?.Replace(" ", "_")}_{DateTime.UtcNow:yyyyMMdd}.csv";
 
             return File(bytes, "text/csv", fileName);
         }
